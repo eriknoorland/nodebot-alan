@@ -1,0 +1,26 @@
+{
+  "name": "alan2",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "git": "file:github.com:eriknoorland/node-gripper.git",
+    "line-sensor": "git+https://git@github.com/eriknoorland/node-line-sensor.git",
+    "node-gripper": "git+https://git@github.com/eriknoorland/node-gripper.git",
+    "node-rplidar": "git+https://git@github.com/eriknoorland/node-rplidar.git",
+    "nodebot-motion-controller": "git+https://git@github.com/eriknoorland/nodebot-motion-controller.git",
+    "nodemon": "^2.0.7",
+    "robotlib": "git+https://git@github.com/eriknoorland/node-robotlib.git",
+    "serialport": "^9.2.0",
+    "shelljs": "^0.8.4",
+    "socket.io": "^4.0.1"
+  }
+}
