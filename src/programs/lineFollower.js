@@ -1,15 +1,16 @@
 const robotlib = require('robotlib');
 
-module.exports = ({ config, logger, controllers, sensors }) => {
+module.exports = (withObstacle = false) => ({ config, logger, controllers, sensors }) => {
   const STATE_IDLE = 'idle';
   const STATE_CALIBRATION = 'calibration';
   const STATE_LINE_FOLLOWING = 'lineFollowing';
+  const STATE_OBSTACLE_AVOIDANCE = 'obstacleAvoidance';
   const STATE_DONE = 'done';
 
   const { motion } = controllers;
-  const { line: lineSensor } = sensors;
+  const { lidar, line: lineSensor } = sensors;
   const calibrationData = [];
-  const maxSpeed = config.MAX_SPEED;
+  const maxSpeed = 300;
   const speed = maxSpeed - 100;
   const Kp = 40;
 
@@ -20,10 +21,14 @@ module.exports = ({ config, logger, controllers, sensors }) => {
   let meanValue;
 
   function constructor() {
-    logger.log('constructor', 'lineFollower');
+    logger.log('constructor', 'lineFollowerObstacle');
   }
 
   function start() {
+    if (withObstacle) {
+      lidar.on('data', onLidarData);
+    }
+
     lineSensor.on('data', onLineData);
     setTimeout(calibrate, 1000);
   }
@@ -31,12 +36,16 @@ module.exports = ({ config, logger, controllers, sensors }) => {
   function stop() {
     state = STATE_DONE;
 
+    if (withObstacle) {
+      lidar.off('data', onLidarData);
+    }
+
     lineSensor.off('data', onLineData);
     motion.stop();
   }
 
   function missionComplete() {
-    logger.log('mission complete', 'lineFollower');
+    logger.log('mission complete', 'lineFollowerObstacle');
     stop();
   }
 
@@ -53,9 +62,7 @@ module.exports = ({ config, logger, controllers, sensors }) => {
     maxValue = Math.max(...calibrationData);
     meanValue = (minValue + maxValue) / 2;
 
-    setTimeout(() => {
-      state = STATE_LINE_FOLLOWING;
-    }, 1000);
+    state = STATE_LINE_FOLLOWING;
   }
 
   function lineFollowing(data) {
@@ -87,6 +94,16 @@ module.exports = ({ config, logger, controllers, sensors }) => {
         missionComplete();
       }
     }
+
+    if (withObstacle && state == STATE_OBSTACLE_AVOIDANCE) {
+      // do something
+      // when done, state = STATE_LINE_FOLLOWING
+    }
+  }
+
+  function onLidarData(data) {
+    // check if object in x mm perimeter
+    // if true, state = STATE_OBSTACLE_AVOIDANCE
   }
 
   constructor();

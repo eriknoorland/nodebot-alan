@@ -14,9 +14,16 @@ const scan = require('../sensor/lidar/scan');
  */
 const decideAngle = measurements => {
   const minValue = getShortestDistance(scanObject2Array(measurements));
-  const directions = [minValue];
+  const verificationDistance = getAngleDistance(measurements, normalizeAngle(minValue.angle + 20), 1);
+  let firstDirection = minValue;
 
-  console.log('decideAngle - minValue', minValue);
+  if (verificationDistance > minValue.distance * 2) {
+    firstDirection = { angle: minValue.angle, distance: verificationDistance }
+  }
+
+  console.log(minValue, verificationDistance);
+
+  const directions = [firstDirection];
 
   for (let i = 1; i <= 3; i += 1) {
     const angle = normalizeAngle(minValue.angle + (i * 90));
@@ -25,14 +32,16 @@ const decideAngle = measurements => {
     directions.push({ angle, distance });
   }
 
+  console.log(directions);
+
   const direction = getLongestDistance(directions);
   let { angle } = direction;
-
-  console.log('decideAngle - direction', direction);
 
   if (angle > 180) {
     angle = (180 - (angle - 180)) * -1;
   }
+
+  console.log(angle);
 
   return angle;
 };
@@ -51,28 +60,28 @@ const verifyStartVector = async (lidar, motion) => {
   let averagedMeasurements = {};
 
   measurements = await scan(lidar, scanDuration);
-  averagedMeasurements = await averageMeasurements(measurements);
+  averagedMeasurements = averageMeasurements(measurements);
 
-  const rearOffset = (20 / 2) + 4; // (robot diamater / 2) + margin
-  const rearDistance = getAngleDistance(averagedMeasurements, 180) / 10;
+  const rearOffset = (200 / 2) + 50;
+  const rearDistance = getAngleDistance(averagedMeasurements, 180);
   const reverseDistance = Math.floor(rearDistance - rearOffset);
 
   if (reverseDistance > 0) {
-    await motion.distanceHeading(-reverseDistance, 0); // FIXME reverse
+    await motion.distanceHeading(-reverseDistance, 0);
   }
 
   measurements = await scan(lidar, scanDuration);
-  averagedMeasurements = await averageMeasurements(measurements);
+  averagedMeasurements = averageMeasurements(measurements);
 
   const rightSideDistanceStart = getAngleDistance(averagedMeasurements, 90);
 
   await motion.distanceHeading(forwardDistance, 0);
 
   measurements = await scan(lidar, scanDuration);
-  averagedMeasurements = await averageMeasurements(measurements);
+  averagedMeasurements = averageMeasurements(measurements);
 
   const rightSideDistanceEnd = getAngleDistance(averagedMeasurements, 90);
-  const rightSideDifference = (rightSideDistanceEnd - rightSideDistanceStart) / 10;
+  const rightSideDifference = (rightSideDistanceEnd - rightSideDistanceStart);
   const correctionAngle = Math.sin(rightSideDifference / forwardDistance);
 
   if (correctionAngle) {
@@ -89,37 +98,18 @@ const verifyStartVector = async (lidar, motion) => {
  * @return {Promise}
  */
 const solveStartVector = async (lidar, motion) => {
-  // const rotationOffset = 20; // deg
-  // const rotationOffsetRad = robotlib.utils.math.deg2rad(rotationOffset); // rad
-  const scanDuration = 2000; // ms
+  const measurements = {};
 
-  let measurements = {};
+  await scan(lidar, 2000, 0, measurements);
 
-  // await main.setLedColor.apply(null, config.color.orange);
-
-  await scan(lidar, scanDuration, 0, measurements);
-  // await motion.rotate(rotationOffsetRad);
-
-  // await scan(lidar, scanDuration, rotationOffset, measurements);
-  // await motion.rotate(-(rotationOffsetRad * 2));
-
-  // await scan(lidar, scanDuration, -rotationOffset, measurements);
-  // await motion.rotate(rotationOffsetRad);
-
-  const averagedMeasurements = await averageMeasurements(measurements);
+  const averagedMeasurements = averageMeasurements(measurements);
   const estimatedCorrectionAngle = decideAngle(averagedMeasurements);
-  const estimatedCorrectionAngleRad = robotlib.utils.math.deg2rad(estimatedCorrectionAngle);
 
-  console.log({ estimatedCorrectionAngle, estimatedCorrectionAngleRad });
+  await motion.rotate(robotlib.utils.math.deg2rad(estimatedCorrectionAngle));
+  motion.appendPose({ x: 0, y: 0, phi: 0 });
 
-  await motion.rotate(estimatedCorrectionAngleRad);
   await verifyStartVector(lidar, motion);
-
-  // FIXME scan left and rear to determine x and y
-  // await motion.setTrackPose(true);
-  // await motion.appendPose({ x, y, phi: 0});
-
-  // await main.setLedColor.apply(null, config.color.green);
+  motion.appendPose({ x: 0, y: 0, phi: 0 });
 
   return Promise.resolve();
 };

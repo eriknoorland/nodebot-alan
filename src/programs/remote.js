@@ -1,7 +1,6 @@
 const scan = require('../utils/sensor/lidar/scan');
 const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-// const getInitialPosition = require('../utils/getInitialPosition'); // FIXME get from robotlib
-// const config = require('../config');
+const getInitialPosition = require('../utils/motion/getInitialPosition');
 
 module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   const { motion, gripper } = controllers;
@@ -13,24 +12,16 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
     logger.log('constructor', 'remote');
   }
 
-  function start() {
+  async function start() {
     logger.log('start', 'remote');
 
-    if (lidar) {
-      scan(lidar, 2000)
-        .then(averageMeasurements)
-        .then(console.log);
-    }
+    // const scanData = await scan(lidar, 2000);
+    // const averagedMeasurements = averageMeasurements(scanData);
+    // const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
-    // const { x, y } = getInitialPosition(); // FIXME get initial pose util
-    const x = 190; // FIXME rear distance
-    const y = (arena.height / 4) + (arena.height / 2); // FIXME left distance + (arena.height / 2)
-
-    if (motion) {
-      motion.on('pose', onPose);
-      motion.setTrackPose(true);
-      motion.appendPose({ x, y, phi: 0 });
-    }
+    motion.on('pose', onPose);
+    motion.setTrackPose(true);
+    motion.appendPose({ x: 190, y: arena.height * 0.75, phi: 0 }); // FIXME after start vector solving
 
     socket.on('ArrowUp', forward);
     socket.on('ArrowDown', reverse);
@@ -68,31 +59,27 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   }
 
   function forward() {
-    logger.log('forward', 'remote');
     const heading = currentPose.phi || 0;
 
-    motion.distanceHeading(250, heading);
+    motion.speedHeading(config.MAX_SPEED, heading, () => {});
   }
 
   function reverse() {
-    logger.log('reverse', 'remote');
     const heading = currentPose.phi || 0;
 
+    // motion.speedHeading(-config.MAX_SPEED, heading, () => {});
     motion.distanceHeading(-250, heading);
   }
 
   function stopMotors() {
-    logger.log('stop motors', 'remote');
     motion.stop();
   }
 
   function rotateLeft() {
-    logger.log('rotateLeft', 'remote');
     motion.rotate(-Math.PI / 2);
   }
 
   function rotateRight() {
-    logger.log('rotateRight', 'remote');
     motion.rotate(Math.PI / 2);
   }
 

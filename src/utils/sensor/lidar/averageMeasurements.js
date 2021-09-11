@@ -1,21 +1,21 @@
 /**
  * Returns an object containing averaged measured angle distances
- * @param {Object} angleMeasurements
- * @return {Promise}
+ * @param {Object} measurements
+ * @return {Object}
  */
- const averageMeasurements = angleMeasurements => {
+const averageMeasurements = measurements => {
   const sum = (acc, value) => (acc + value);
 
-  return Promise.resolve(Object.keys(angleMeasurements)
+  return Object.keys(measurements)
     .reduce((acc, angle) => {
-      const measurements = angleMeasurements[angle];
-      const total = measurements.reduce(sum, 0);
-      const average = Math.floor(total / measurements.length);
+      const angleMeasurements = measurements[angle];
+      const total = angleMeasurements.reduce(sum, 0);
+      const average = Math.floor(total / angleMeasurements.length);
 
       acc[angle] = average;
 
       return acc;
-    }, {}));
+    }, {});
 };
 
 module.exports = averageMeasurements;

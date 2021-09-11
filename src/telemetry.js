@@ -73,9 +73,11 @@ module.exports = (socket, config, { lidar, lineSensor, motion }) => {
    * @param {Object} data
    */
   function onLidarData({ angle, distance }) {
-    const index = robotlib.utils.sensor.lidar.normalizeAngle(Math.round(angle));
+    if (distance > 0) {
+      const index = robotlib.utils.sensor.lidar.normalizeAngle(Math.round(angle));
 
-    lidarData[index] = distance;
+      lidarData[index] = distance;
+    }
   }
 
   /**

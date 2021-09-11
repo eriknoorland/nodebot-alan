@@ -1,8 +1,11 @@
+const scan = require('../utils/sensor/lidar/scan');
+const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
 const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
-const solveStartVector = require('../utils/motion/solveStartVector');
+const solveStartVector = require('../utils/motion/solveStartVector2');
 const gotoStartPosition = require('../utils/motion/gotoStartPosition');
+const getInitialPosition = require('../utils/motion/getInitialPosition');
 
-module.exports = ({ config, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
   const { lidar } = sensors;
 
@@ -13,15 +16,27 @@ module.exports = ({ config, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'backAndForth');
 
-    // await solveStartVector(lidar, motion);
+    // const startVectorScanData = await scan(lidar, 2000);
+    // const startVectorAveragedMeasurements = averageMeasurements(startVectorScanData);
+    // solveStartVectorHough(startVectorAveragedMeasurements, arena.height, 50, motion);
 
-    // await gotoStartPosition(lidar, motion);
-    // FIXME motion.appendPose({ x, y, phi: 0 });
+    await solveStartVector(lidar, motion);
 
-    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(lidar, 750, 0));
+    const startPositionScanData = await scan(lidar, 2000);
+    const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
+    await gotoStartPosition(startPositionAveragedMeasurements, motion);
+
+    const initialPositionScanData = await scan(lidar, 2000);
+    const averagedMeasurements = averageMeasurements(initialPositionScanData);
+    const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
+
+    motion.setTrackPose(true);
+    motion.appendPose({ x, y, phi: 0 });
+
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(lidar, 600, 0));
     await motion.stop();
     await motion.rotate(-Math.PI);
-    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(lidar, 750, 0));
+    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(lidar, 600, 0));
     await motion.stop();
 
     missionComplete();

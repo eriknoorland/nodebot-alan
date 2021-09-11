@@ -3,12 +3,13 @@
  * @param {Object} measurements
  * @return {Array}
  */
- const scanObject2Array = (measurements) => Object.keys(measurements)
- .map((a) => {
-   const angle = parseInt(a, 10);
-   const distance = measurements[angle];
+ const scanObject2Array = measurements => Object
+  .keys(measurements)
+  .map(a => {
+    const angle = parseInt(a, 10);
+    const distance = measurements[angle];
 
-   return { angle, distance };
- });
+    return { angle, distance };
+  });
 
 module.exports = scanObject2Array;

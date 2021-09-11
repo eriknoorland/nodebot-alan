@@ -1,17 +1,10 @@
-const config = require('../config');
-const rotate = require('../utils/motion/rotate');
-const solveStartVector = require('../utils/solveStartVector');
-const gotoStartPosition = require('../utils/motion/gotoStartPosition');
-const isAtNumTicks = require('../utils/motion/isAtNumTicks');
-const driveStraightUntil = require('../utils/motion/driveStraightUntil');
+const robotlib = require('robotlib');
 const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
 
-module.exports = ({ logger, controllers, sensors }) => {
-  const { obstacles, speed } = config;
-  const { main } = controllers;
+module.exports = (narrowPassage = false) => ({ config, arena, logger, controllers, sensors }) => {
+  const { motion } = controllers;
   const { lidar } = sensors;
-
-  let encoderCountTemp;
+  const lidarData = {};
 
   function constructor() {
     logger.log('constructor', 'tTime');
@@ -19,76 +12,126 @@ module.exports = ({ logger, controllers, sensors }) => {
 
   async function start() {
     logger.log('start', 'tTime');
+    lidar.on('data', onLidarData);
 
-    const driveUntillWallFast = isWithinDistance.bind(null, lidar, obstacles.wall.far, 0);
-    const driveUntillWallSlow = isWithinDistance.bind(null, lidar, obstacles.wall.close, 0);
-    let numTicks = 0;
+    // await solveStartVector(lidar, main);
+    // await gotoStartPosition(lidar, main);
 
-    await solveStartVector(lidar, main);
-    await gotoStartPosition(lidar, main);
-    await main.enableTicks();
-    await countTicks();
-    await driveStraightUntil(speed.straight.fast, main, driveUntillWallFast);
-    await driveStraightUntil(speed.straight.slow, main, driveUntillWallSlow);
-    await main.stop();
-    numTicks = await getCountedTicks();
-    await rotate(main, -180);
-    await main.stop(1);
-    await driveUntillNumTicks(numTicks, 0.5);
-    await main.stop();
-    await rotate(main, 90);
-    await main.stop(1);
-    await countTicks();
-    await driveStraightUntil(speed.straight.fast, main, driveUntillWallFast);
-    await driveStraightUntil(speed.straight.slow, main, driveUntillWallSlow);
-    await main.stop();
-    numTicks = await getCountedTicks();
-    await rotate(main, -180);
-    await main.stop(1);
-    await driveUntillNumTicks(numTicks, 1);
-    await main.stop();
-    await rotate(main, 90);
-    await main.stop(1);
-    await driveStraightUntil(speed.straight.fast, main, driveUntillWallFast);
-    await driveStraightUntil(speed.straight.slow, main, driveUntillWallSlow);
-    await main.stop();
-    await main.disableTicks();
+    motion.setTrackPose(true);
+    motion.appendPose({ x: 190, y: arena.height * 0.75, phi: 0 }); // FIXME after start vector solving
+
+    // A -> B
+    const startPose = motion.getPose();
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(lidar, 750, 0));
+    await motion.stop();
+    const bPose = motion.getPose();
+    const startToBDistance = robotlib.utils.math.calculateDistance(startPose, bPose);
+    await motion.rotate(-Math.PI);
+
+    // B -> center
+    await motion.distanceHeading(startToBDistance * 0.5, -Math.PI);
+    await motion.stop();
+    await motion.rotate(Math.PI / 2);
+
+    if (narrowPassage) {
+      await motion.distanceHeading(arena.height * 0.25, -Math.PI / 2);
+      // await robotlib.utils.pause(2000);
+
+      const scanData2Array = (data, acc, a) => {
+        const angle = a > 180 ? (360 - a) * -1 : parseInt(a, 10);
+        const distance = data[a];
+
+        acc.push({ angle, distance });
+        return acc;
+      };
+
+      const measurements = Object.keys(lidarData)
+        .filter(getScanRange.bind(null, 50))
+        .reduce(scanData2Array.bind(null, lidarData), [])
+        .sort((a, b) => a.angle - b.angle);
+
+      const shortestDistance = robotlib.utils.sensor.lidar.getShortestDistance(measurements);
+      const distanceToObstacleLine = shortestDistance.distance * Math.cos(robotlib.utils.math.deg2rad(shortestDistance.angle));
+      const obstacleMeasurements = measurements.filter(({ angle, distance }) => {
+        const a = angle < 0 ? (360 + angle) : angle;
+        const referenceS = distanceToObstacleLine / Math.cos(robotlib.utils.math.deg2rad(a));
+
+        return distance < referenceS + 50;
+      });
+
+      const gap = { minAngle: 0, maxAngle: 0 };
+
+      for (let i = 1, x = obstacleMeasurements.length; i < x; i += 1) {
+        const minAngle = obstacleMeasurements[i - 1].angle;
+        const maxAngle = obstacleMeasurements[i].angle;
+        const angleDiff = maxAngle - minAngle;
+
+        if (angleDiff > gap.maxAngle - gap.minAngle) {
+          gap.maxAngle = maxAngle;
+          gap.minAngle = minAngle;
+        }
+      }
+
+      const gapAngle = Math.round((gap.minAngle + gap.maxAngle) / 2);
+      const normalizedGapAngle = (360 + gapAngle) % 360;
+      const sideDistanceOffset = Math.floor(gapAngle / 15) * 25;
+
+      const sideDistance = (distanceToObstacleLine * Math.tan(robotlib.utils.math.deg2rad(normalizedGapAngle))) + sideDistanceOffset;
+      const forwardDistance = distanceToObstacleLine - 150; // was 250
+      const turnAngle = Math.atan(sideDistance / forwardDistance);
+      const driveDistance = Math.round((Math.sqrt(Math.pow(forwardDistance, 2) + Math.pow(sideDistance, 2))));
+
+      await motion.rotate(turnAngle);
+      await motion.distanceHeading(driveDistance, (-Math.PI / 2) + turnAngle);
+      await motion.rotate(turnAngle * -1);
+      await motion.speedHeading(200 / 2, -Math.PI / 2, isWithinDistance(lidar, 250, 0));
+      await motion.stop();
+
+      await motion.rotate(-Math.PI);
+      await motion.speedHeading(config.MAX_SPEED, Math.PI / 2, isWithinDistance(lidar, 750, 0));
+      await motion.stop();
+      await motion.rotate(Math.PI / 2);
+    } else {
+      // center -> C
+      const centerPose = motion.getPose();
+      await motion.speedHeading(config.MAX_SPEED, -Math.PI / 2, isWithinDistance(lidar, 750, 0));
+      await motion.stop();
+      const cPose = motion.getPose();
+      const centerToCDistance = robotlib.utils.math.calculateDistance(centerPose, cPose);
+      await motion.rotate(-Math.PI);
+
+      // C -> center
+      await motion.distanceHeading(centerToCDistance, Math.PI / 2);
+      await motion.stop();
+      await motion.rotate(Math.PI / 2);
+    }
+
+    // center -> A
+    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(lidar, 750, 0));
+    await motion.stop();
 
     missionComplete();
   }
 
   function stop() {
     logger.log('stop', 'tTime');
-    main.stop(1);
-    encoderCountTemp = 0;
-  }
-
-  function driveUntillNumTicks(numTicks, multiplier) {
-    const target = numTicks * multiplier;
-
-    return driveStraightUntil(speed.straight.fast, main, isAtNumTicks.bind(null, main, target));
-  }
-
-  function countTicks() {
-    encoderCountTemp = 0;
-    main.on('ticks', onTicksData);
-
-    return Promise.resolve();
-  }
-
-  function getCountedTicks() {
-    main.off('ticks', onTicksData);
-
-    return Promise.resolve(encoderCountTemp);
-  }
-
-  function onTicksData({ right }) {
-    encoderCountTemp += right;
+    motion.stop(true);
+    lidar.off('data', onLidarData);
   }
 
   function missionComplete() {
     logger.log('mission complete', 'tTime');
     stop();
+  }
+
+  function onLidarData({ angle, distance }) {
+    if (distance) {
+      lidarData[Math.floor(angle)] = distance;
+    }
+  }
+
+  function getScanRange(range, angle) {
+    return angle >= (360 - range) || angle <= range;
   }
 
   constructor();
