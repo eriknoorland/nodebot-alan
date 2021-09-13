@@ -4,12 +4,13 @@ const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements')
 const getInitialPosition = require('../utils/motion/getInitialPosition');
 const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
 
-module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensors }) => {
+module.exports = (withObstacle = false) => ({ config, arena, logger, controllers, sensors }) => {
   const STATE_IDLE = 'idle';
   const STATE_CALIBRATION = 'calibration';
   const STATE_LINE_FOLLOWING = 'lineFollowing';
   const STATE_OBSTACLE_AVOIDANCE = 'obstacleAvoidance';
   const STATE_REDISCOVER_LINE = 'rediscoverLine';
+  const STATE_ROTATE_TO_LINE = 'rotateToLine';
   const STATE_DONE = 'done';
 
   const { motion } = controllers;
@@ -108,11 +109,21 @@ module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensor
     return true;
   }
 
-  async function obstacleAvoiding() {
+  async function obstacleAvoiding(data) {
     if (!isObstacleAvoiding) {
       isObstacleAvoiding = true;
 
-      await motion.rotate((Math.PI / 2) * (passObstancleOnLeftSide ? -1 : 1)); // TODO verify angle
+      const maxValue = Math.max(...data.filter(value => value > meanValue));
+      const index = data.indexOf(maxValue);
+      const angleIndexOffset = robotlib.utils.math.map(index, 0, 7, -30, 30);
+      const angleIndexOffsetRad = robotlib.utils.math.deg2rad(angleIndexOffset);
+
+      // FIXME rotate closer to can to avoid "finding" the wrong line?
+      await motion.rotate(((Math.PI / 2) - angleIndexOffsetRad) * (passObstancleOnLeftSide ? -1 : 1));
+
+      const heading = motion.getPose().phi;
+
+      await motion.distanceHeading(200, heading);
 
       state = STATE_REDISCOVER_LINE;
     }
@@ -121,10 +132,10 @@ module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensor
   async function rediscoverLine(data) {
     if (!hasRediscoveredLine) {
       if (data.every(value => value < meanValue)) {
-        const innerWheelSpeed = 120;
-        const outerWheelSpeed = 150;
-        const leftSpeed = passObstancleOnLeftSide ? outerWheelSpeed : innerWheelSpeed; // TODO verify speed diff
-        const rightSpeed = passObstancleOnLeftSide ? innerWheelSpeed : outerWheelSpeed; // TODO verify speed diff
+        const innerWheelSpeed = 100;
+        const outerWheelSpeed = 250;
+        const leftSpeed = passObstancleOnLeftSide ? outerWheelSpeed : innerWheelSpeed;
+        const rightSpeed = passObstancleOnLeftSide ? innerWheelSpeed : outerWheelSpeed;
 
         motion.speedLeftRight(leftSpeed, rightSpeed);
 
@@ -134,10 +145,27 @@ module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensor
       hasRediscoveredLine = true;
 
       await motion.stop();
-      await motion.rotate((Math.PI / 2) * (passObstancleOnLeftSide ? -1 : 1));
 
-      state = STATE_LINE_FOLLOWING;
+      state = STATE_ROTATE_TO_LINE;
     }
+  }
+
+  async function rotateToLine(data) {
+    const maxValue = Math.max(...data.filter(value => value > meanValue));
+    const index = data.indexOf(maxValue);
+    const isRoughlyCenteredOnLine = index > 2 && index < 5;
+
+    if (!isRoughlyCenteredOnLine) {
+      const leftSpeed = config.MIN_SPEED * (passObstancleOnLeftSide ? -1 : 1);
+      const rightSpeed = leftSpeed * -1;
+
+      motion.speedLeftRight(leftSpeed, rightSpeed);
+      return;
+    }
+
+    await motion.stop(true);
+
+    state = STATE_LINE_FOLLOWING;
   }
 
   async function onLidarData({ angle, distance }) {
@@ -146,13 +174,13 @@ module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensor
         return;
       }
 
-      const inAngleRange = angle > 300 || angle < 60; // TODO verify if these values are adequate
-      const obstancleInSight = distance < 350;
+      const inAngleRange = angle > 300 || angle < 60;
+      const obstancleInSight = distance < 250;
 
       if (!obstacleDetected && inAngleRange && obstancleInSight) {
         obstacleDetected = true;
 
-        await motion.stop();
+        await motion.stop(true);
 
         state = STATE_OBSTACLE_AVOIDANCE;
       }
@@ -172,11 +200,15 @@ module.exports = (withObstacle = false) => ({ arena, logger, controllers, sensor
     }
 
     if (withObstacle && state === STATE_OBSTACLE_AVOIDANCE) {
-      obstacleAvoiding();
+      obstacleAvoiding(data);
     }
 
     if (withObstacle && state === STATE_REDISCOVER_LINE) {
       rediscoverLine(data);
+    }
+
+    if (withObstacle && state === STATE_ROTATE_TO_LINE) {
+      rotateToLine(data);
     }
   }
 
