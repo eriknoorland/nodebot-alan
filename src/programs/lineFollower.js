@@ -1,8 +1,11 @@
 const robotlib = require('robotlib');
 const scan = require('../utils/sensor/lidar/scan');
 const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
+const filterMeasurements = require('../utils/sensor/lidar/filterMeasurements');
 const getInitialPosition = require('../utils/motion/getInitialPosition');
 const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
+const getShortestDistance = require('../utils/sensor/lidar/getShortestDistance');
+const scanObject2Array = require('../utils/sensor/lidar/scanObject2Array');
 
 module.exports = (withObstacle = false) => ({ config, arena, logger, controllers, sensors }) => {
   const STATE_IDLE = 'idle';
@@ -109,17 +112,24 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
     return true;
   }
 
-  async function obstacleAvoiding(data) {
+  async function obstacleAvoiding() {
     if (!isObstacleAvoiding) {
       isObstacleAvoiding = true;
 
-      const maxValue = Math.max(...data.filter(value => value > meanValue));
-      const index = data.indexOf(maxValue);
-      const angleIndexOffset = robotlib.utils.math.map(index, 0, 7, -30, 30);
-      const angleIndexOffsetRad = robotlib.utils.math.deg2rad(angleIndexOffset);
+      const rotationDirection = passObstancleOnLeftSide ? -1 : 1;
+      const canDistanceMeasurements = await scan(lidar, 1000);
+      const averagedCanDistanceMeasurements = averageMeasurements(canDistanceMeasurements);
+      const filteredCanDistanceMeasurements = filterMeasurements(averagedCanDistanceMeasurements, a => a > 300 || a < 60);
+      let canAngle = getShortestDistance(scanObject2Array(filteredCanDistanceMeasurements)).angle;
 
-      // FIXME rotate closer to can to avoid "finding" the wrong line?
-      await motion.rotate(((Math.PI / 2) - angleIndexOffsetRad) * (passObstancleOnLeftSide ? -1 : 1));
+      if (canAngle > 180) {
+        canAngle = 360 - canAngle;
+      }
+
+      const rotationAngle = 45 + canAngle;
+      const rotationAngleRad = robotlib.utils.math.deg2rad(rotationAngle);
+
+      await motion.rotate(rotationAngleRad * rotationDirection);
 
       const heading = motion.getPose().phi;
 
@@ -132,8 +142,9 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
   async function rediscoverLine(data) {
     if (!hasRediscoveredLine) {
       if (data.every(value => value < meanValue)) {
-        const innerWheelSpeed = 100;
-        const outerWheelSpeed = 250;
+        const speedDiff = 150;
+        const outerWheelSpeed = 230;
+        const innerWheelSpeed = outerWheelSpeed - speedDiff;
         const leftSpeed = passObstancleOnLeftSide ? outerWheelSpeed : innerWheelSpeed;
         const rightSpeed = passObstancleOnLeftSide ? innerWheelSpeed : outerWheelSpeed;
 
