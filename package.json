@@ -19,7 +19,7 @@
     "nodebot-motion-controller": "git+https://git@github.com/eriknoorland/nodebot-motion-controller.git",
     "nodemon": "^2.0.7",
     "robotlib": "git+https://git@github.com/eriknoorland/node-robotlib.git",
-    "serialport": "^9.2.0",
+    "serialport": "^8.0.8",
     "shelljs": "^0.8.4",
     "socket.io": "^4.2.0"
   }
