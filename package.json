@@ -21,6 +21,6 @@
     "robotlib": "git+https://git@github.com/eriknoorland/node-robotlib.git",
     "serialport": "^9.2.0",
     "shelljs": "^0.8.4",
-    "socket.io": "^4.0.1"
+    "socket.io": "^4.2.0"
   }
 }

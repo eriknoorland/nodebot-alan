@@ -17,8 +17,7 @@ const initMotionController = require('./initMotionController');
 const socketOptions = {
   allowEIO3: true,
   cors: {
-    origin: process.env.TELEMETRY_DEV_URL,
-    credentials: true,
+    origin: '*',
   },
 };
 
