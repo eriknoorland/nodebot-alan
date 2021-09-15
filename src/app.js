@@ -62,6 +62,7 @@ const onSocketConnection = socket => {
   socket.on('disconnect', onSocketDisconnect);
   socket.on('start', onStart.bind(null, socket));
   socket.on('stop', onStop);
+  socket.on('reboot', onReboot);
   socket.on('shutdown', onShutdown);
   socket.on('selected_arena', selectedArena => {
     logger.log(`arena selected - ${selectedArena.name}`, 'app');
@@ -98,6 +99,11 @@ const onStop = () => {
   }
 
   shell.exec('touch ./restart.js');
+};
+
+const onReboot = () => {
+  logger.log('reboot', 'app', 'red');
+  shell.exec('sudo reboot');
 };
 
 const onShutdown = () => {
