@@ -33,10 +33,11 @@ const httpServer = http.createServer(app);
 const io = socketio(httpServer, socketOptions);
 const logger = robotlib.utils.logger(io);
 const defaultProgramOptions = {
+  io,
   config,
   logger,
   controllers: {},
-  sensors: {}
+  sensors: {},
 };
 
 let currentProgram;

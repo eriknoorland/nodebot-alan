@@ -1,25 +1,26 @@
-// const backAndForth = require('./backAndForth');
+const backAndForth = require('./backAndForth');
 // const slalom = require('./slalom');
-// const superSlalom = require('./superSlalom');
-const superSlalom2 = require('./superSlalom2');
+const superSlalom = require('./superSlalom2');
 const lineFollower = require('./lineFollower');
 const tTime = require('./tTime');
-// const cans = require('./cans');
+const cans = require('./cans');
 const remote = require('./remote');
-// const startVector = require('./startVector');
-// const umbmark = require('./umbmark');
+const startVector = require('./testStartVector');
+const pickupCan = require('./testPickupCan');
+// const umbmark = require('./testUMBMark');
 
 module.exports = [
-  // { name: 'Heen & Weer', module: backAndForth },
+  { name: 'Heen & Weer', module: backAndForth },
   // { name: 'Slalom', module: slalom },
-  { name: 'Super Slalom', module: superSlalom2 },
+  { name: 'Super Slalom', module: superSlalom },
   { name: 'Lijnvolgen', module: lineFollower() },
   { name: 'Lijnvolgen met Obstakel', module: lineFollower(true) },
   // { name: 'T-Tijd', module: tTime() },
-  { name: 'T-Tijd + Bonus', module: tTime(true) },
-  // { name: 'Blikken', module: cans() },
+  { name: 'T-Tijd met smalle doorgang', module: tTime(true) },
+  { name: 'Blikken', module: cans() },
   // { name: 'Blikken Retour', module: cans(true) },
-  { name: 'Remote', module: remote },
-  // { name: 'Start Vector', module: startVector },
-  // { name: 'UMBMark', module: umbmark },
+  { name: '[Test] Remote', module: remote },
+  { name: '[Test] Start Vector', module: startVector },
+  { name: '[Test] Blik pakken', module: pickupCan },
+  // { name: '[Test] UMBMark', module: umbmark },
 ];

@@ -15,11 +15,12 @@ const MIN_SPEED = 50; // mm/s
 const MAX_SPEED = 200; // mm/s
 const MAX_ROTATION_SPEED = MAX_SPEED / 2; // mm/s
 const HEADING_KP = 100;
-const GRIPPER_JAW_CLOSE_ANGLE = 35;
-const GRIPPER_JAW_WIDE_OPEN_ANGLE = 85;
-const GRIPPER_JAW_OPEN_ANGLE = 125;
-const GRIPPER_LIFT_UP_ANGLE = 75;
-const GRIPPER_LIFT_DOWN_ANGLE = 140;
+const GRIPPER_JAW_CLOSE_ANGLE = 34; // deg
+const GRIPPER_JAW_WIDE_OPEN_ANGLE = 85; // deg
+const GRIPPER_JAW_OPEN_ANGLE = 125; // deg
+const GRIPPER_LIFT_UP_ANGLE = 75; // deg
+const GRIPPER_LIFT_DOWN_ANGLE = 140; // deg
+const GRIPPER_OBSTACLE_DISTANCE = 120; // mm
 
 const config = {
   LOOP_TIME,
@@ -44,6 +45,7 @@ const config = {
   GRIPPER_JAW_OPEN_ANGLE,
   GRIPPER_LIFT_UP_ANGLE,
   GRIPPER_LIFT_DOWN_ANGLE,
+  GRIPPER_OBSTACLE_DISTANCE,
 };
 
 module.exports = config;
