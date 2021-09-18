@@ -97,7 +97,7 @@ const onStop = async () => {
 
   await exitHandler();
 
-  process.exit();
+  shell.exec(`kill -9 ${process.pid}`);
 };
 
 const onRestart = async () => {
