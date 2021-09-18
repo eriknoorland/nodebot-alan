@@ -108,7 +108,7 @@ const onRestart = async () => {
   shell.exec(`kill -9 ${process.pid} && npm start`);
 };
 
-const onReboot = () => {
+const onReboot = async () => {
   logger.log('reboot', 'app', 'red');
 
   await exitHandler();
@@ -116,7 +116,7 @@ const onReboot = () => {
   shell.exec('sudo reboot');
 };
 
-const onShutdown = () => {
+const onShutdown = async () => {
   logger.log('shutdown', 'app', 'red');
 
   await exitHandler();
