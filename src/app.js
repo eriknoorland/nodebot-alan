@@ -62,6 +62,7 @@ const onSocketConnection = socket => {
 
   socket.on('disconnect', onSocketDisconnect);
   socket.on('start', onStart.bind(null, socket));
+  socket.on('restart', onRestart);
   socket.on('stop', onStop);
   socket.on('reboot', onReboot);
   socket.on('shutdown', onShutdown);
@@ -91,15 +92,20 @@ const onStart = (socket, programIndex) => {
   currentProgram.start();
 }
 
-const onStop = () => {
+const onStop = async () => {
   logger.log('stop');
 
-  if (currentProgram) {
-    currentProgram.stop();
-    currentProgram = null;
-  }
+  await exitHandler();
 
-  shell.exec('touch ./restart.js');
+  process.exit();
+};
+
+const onRestart = async () => {
+  logger.log('restart');
+
+  await exitHandler();
+
+  shell.exec(`kill -9 ${process.pid} && npm start`);
 };
 
 const onReboot = () => {
@@ -165,6 +171,24 @@ const updateProgramOptions = usbDevices => {
   defaultProgramOptions.sensors.line = usbDevices.lineSensor;
 
   return Promise.resolve();
+};
+
+const exitHandler = async () => {
+  logger.log('clean up before exit');
+
+  if (currentProgram) {
+    currentProgram.stop();
+    currentProgram = null;
+  }
+
+  const { controllers, sensors } = defaultProgramOptions;
+
+  controllers.gripper && await controllers.gripper.close();
+  controllers.motion && await controllers.motion.close();
+  sensors.lidar && await sensors.lidar.close();
+  sensors.line && await sensors.line.close();
+
+  logger.log('done cleaning up');
 };
 
 io.on('connection', onSocketConnection);
