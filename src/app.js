@@ -110,11 +110,17 @@ const onRestart = async () => {
 
 const onReboot = () => {
   logger.log('reboot', 'app', 'red');
+
+  await exitHandler();
+
   shell.exec('sudo reboot');
 };
 
 const onShutdown = () => {
   logger.log('shutdown', 'app', 'red');
+
+  await exitHandler();
+
   shell.exec('sudo shutdown -h now');
 };
 
