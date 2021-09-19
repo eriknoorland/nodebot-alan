@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
     "start": "node index.js"
   },
   "author": "",
@@ -17,6 +18,7 @@
     "node-gripper": "git+https://git@github.com/eriknoorland/node-gripper.git",
     "node-rplidar": "git+https://git@github.com/eriknoorland/node-rplidar.git",
     "nodebot-motion-controller": "git+https://git@github.com/eriknoorland/nodebot-motion-controller.git",
+    "nodemon": "^2.0.12",
     "robotlib": "git+https://git@github.com/eriknoorland/node-robotlib.git",
     "serialport": "^8.0.8",
     "shelljs": "^0.8.4",
