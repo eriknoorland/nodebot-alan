@@ -11,13 +11,14 @@ const canDetection = (matrix, pose, lidarData, resolution = 50) => {
       const angle = parseInt(key, 10);
       const distance = lidarData[key];
       const obstacle = {
-        obstacleX: pose.x + Math.cos(deg2rad(angle)) * distance,
-        obstacleY: pose.y + Math.sin(deg2rad(angle)) * distance,
+        x: pose.x + Math.cos(deg2rad(angle)) * distance,
+        y: pose.y + Math.sin(deg2rad(angle)) * distance,
       };
       const column = Math.floor(obstacle.x / resolution);
       const row = Math.floor(obstacle.y / resolution);
-      const isWithinYLimits = numberInRange(row, 0, matrix.length - 1);
-      const isWithinXLimits = isWithinYLimits && numberInRange(column, 0, matrix[row].length - 1);
+      const columnOffset = 2;
+      const isWithinYLimits = numberInRange(row, columnOffset, matrix.length - (1 + columnOffset));
+      const isWithinXLimits = isWithinYLimits && numberInRange(column, columnOffset, matrix[row].length - (1 + columnOffset));
       const isWithinBounds = isWithinXLimits && matrix[row][column] > 1;
 
       if (isWithinBounds) {
