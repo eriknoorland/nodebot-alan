@@ -11,6 +11,9 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
   async function start() {
     logger.log('start', 'testUMBMark');
 
+    motion.setTrackPose(true);
+    motion.appendPose({ x: 0, y: 0, phi: 0 });
+
     await motion.distanceHeading(distance, 0);
     await pause(250);
 

@@ -8,6 +8,9 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
   async function start() {
     logger.log('start', 'testStraightLine');
 
+    motion.setTrackPose(true);
+    motion.appendPose({ x: 0, y: 0, phi: 0 });
+
     const returnHeading = Math.PI * rotationDirection;
 
     await motion.distanceHeading(distance, 0);
