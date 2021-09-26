@@ -20,6 +20,11 @@ const pickupCan = async (config, lidar, motion, gripper) => {
 
   const sortedAngles = normalizedAngles.slice(0).sort((a, b) => a.angle - b.angle);
   const canCenter = sortedAngles[Math.floor(sortedAngles.length / 2)];
+
+  if (!canCenter) {
+    return Promise.reject();
+  }
+
   const rotationAngle = canCenter.angle;
   const canDistance = canCenter.distance;
   const lidarAngleOffset = 1;
