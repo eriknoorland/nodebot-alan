@@ -17,7 +17,7 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
     await motion.rotate(returnHeading);
     await motion.distanceHeading(distance, returnHeading);
 
-    missionComplete();
+    testComplete();
   }
 
   function stop() {
@@ -25,8 +25,8 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
     motion.stop(true);
   }
 
-  function missionComplete() {
-    logger.log('mission complete', 'testStraightLine');
+  function testComplete() {
+    logger.log('test complete', 'testStraightLine');
     stop();
   }
 

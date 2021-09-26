@@ -20,7 +20,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
 
     await solveStartVector(lidar, motion);
 
-    missionComplete();
+    testComplete();
   }
 
   function stop() {
@@ -28,8 +28,8 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     motion.stop(true);
   }
 
-  function missionComplete() {
-    logger.log('mission complete', 'startVector');
+  function testComplete() {
+    logger.log('test complete', 'startVector');
     stop();
   }
 

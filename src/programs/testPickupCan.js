@@ -36,7 +36,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await motion.move2XY(pose);
     await dropCan(config, gripper);
 
-    missionComplete();
+    testComplete();
   }
 
   function stop() {
@@ -44,8 +44,8 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     motion.stop(true);
   }
 
-  function missionComplete() {
-    logger.log('mission complete', 'cans');
+  function testComplete() {
+    logger.log('test complete', 'cans');
     stop();
   }
 

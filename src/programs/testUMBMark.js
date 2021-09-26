@@ -34,7 +34,7 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
 
     await motion.rotate((Math.PI / 2) * rotationDirection);
 
-    missionComplete();
+    testComplete();
   }
 
   function stop() {
@@ -42,8 +42,8 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
     motion.stop(true);
   }
 
-  function missionComplete() {
-    logger.log('mission complete', 'testUMBMark');
+  function testComplete() {
+    logger.log('test complete', 'testUMBMark');
     stop();
   }
 
