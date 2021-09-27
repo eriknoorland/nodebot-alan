@@ -8,6 +8,9 @@ module.exports = (numRotations = 1) => ({ config, arena, logger, controllers, se
   async function start() {
     logger.log('start', 'testRotation');
 
+    motion.setTrackPose(true);
+    motion.appendPose({ x: 0, y: 0, phi: 0 });
+
     await motion.rotate(numRotations * (Math.PI * 2));
 
     testComplete();
