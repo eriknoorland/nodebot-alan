@@ -21,7 +21,7 @@ const testPrograms = [
   { name: '[Test] Draai 2x rond linksom', module: rotation(-2) },
   { name: '[Test] Draai 4x rond linksom', module: rotation(-4) },
   { name: '[Test] Draai 8x rond linksom', module: rotation(-8) },
-  { name: '[Test] Draai 10x rond linksom', module: rotation(1-0) },
+  { name: '[Test] Draai 10x rond linksom', module: rotation(-10) },
   { name: '[Test] Rechte lijn 1m rechtsom', module: straightLine(1000) },
   { name: '[Test] Rechte lijn 2m rechtsom', module: straightLine(2000) },
   { name: '[Test] Rechte lijn 3m rechtsom', module: straightLine(3000) },
