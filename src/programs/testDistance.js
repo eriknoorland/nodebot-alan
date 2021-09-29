@@ -1,28 +1,28 @@
-module.exports = (numRotations = 1) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
 
   function constructor() {
-    logger.log('constructor', 'testRotation');
+    logger.log('constructor', 'testDistance');
   }
 
   async function start() {
-    logger.log('start', 'testRotation');
+    logger.log('start', 'testDistance');
 
     motion.setTrackPose(true);
     motion.appendPose({ x: 200, y: arena.height * 0.75, phi: 0 });
 
-    await motion.rotate(numRotations * (Math.PI * 2));
+    await motion.distanceHeading(distance, 0);
 
     testComplete();
   }
 
   function stop() {
-    logger.log('stop', 'testRotation');
+    logger.log('stop', 'testDistance');
     motion.stop(true);
   }
 
   function testComplete() {
-    logger.log('test complete', 'testRotation');
+    logger.log('test complete', 'testDistance');
     stop();
   }
 

@@ -4,34 +4,40 @@ const lineFollower = require('./lineFollower');
 const tTime = require('./tTime');
 const cans = require('./cans');
 const remote = require('./remote');
-const rotation = require('./testRotation');
-const straightLine = require('./testStraightLine');
+
+const testDistance = require('./testDistance');
+const testRotation = require('./testRotation');
+const testStraightLine = require('./testStraightLine');
 const startVector = require('./testStartVector');
 const pickupCan = require('./testPickupCan');
-const umbmark = require('./testUMBMark');
+const testUMBMark = require('./testUMBMark');
 
 const testPrograms = [
   { name: '[Test] Remote', module: remote },
-  { name: '[Test] Draai 1x rond rechtsom', module: rotation(1) },
-  { name: '[Test] Draai 10x rond rechtsom', module: rotation(10) },
-  { name: '[Test] Draai 1x rond linksom', module: rotation(-1) },
-  { name: '[Test] Draai 10x rond linksom', module: rotation(-10) },
-  { name: '[Test] Rechte lijn 1m rechtsom', module: straightLine(1000) },
-  { name: '[Test] Rechte lijn 2m rechtsom', module: straightLine(2000) },
-  { name: '[Test] Rechte lijn 3m rechtsom', module: straightLine(3000) },
-  { name: '[Test] Rechte lijn 4m rechtsom', module: straightLine(4000) },
-  { name: '[Test] Rechte lijn 1m linksom', module: straightLine(1000, -1) },
-  { name: '[Test] Rechte lijn 2m linksom', module: straightLine(2000, -1) },
-  { name: '[Test] Rechte lijn 3m linksom', module: straightLine(3000, -1) },
-  { name: '[Test] Rechte lijn 4m linksom', module: straightLine(4000, -1) },
-  { name: '[Test] UMBMark 1m rechtsom', module: umbmark(1000) },
-  { name: '[Test] UMBMark 2m rechtsom', module: umbmark(2000) },
-  { name: '[Test] UMBMark 3m rechtsom', module: umbmark(3000) },
-  { name: '[Test] UMBMark 4m rechtsom', module: umbmark(4000) },
-  { name: '[Test] UMBMark 1m linksom', module: umbmark(1000, -1) },
-  { name: '[Test] UMBMark 2m linksom', module: umbmark(2000, -1) },
-  { name: '[Test] UMBMark 3m linksom', module: umbmark(3000, -1) },
-  { name: '[Test] UMBMark 4m linksom', module: umbmark(4000, -1) },
+  { name: '[Test] 1m rijden', module: testDistance(1000) },
+  { name: '[Test] 2m rijden', module: testDistance(2000) },
+  { name: '[Test] 3m rijden', module: testDistance(3000) },
+  { name: '[Test] 4m rijden', module: testDistance(4000) },
+  { name: '[Test] Draai 1x rond rechtsom', module: testRotation(1) },
+  { name: '[Test] Draai 10x rond rechtsom', module: testRotation(10) },
+  { name: '[Test] Draai 1x rond linksom', module: testRotation(-1) },
+  { name: '[Test] Draai 10x rond linksom', module: testRotation(-10) },
+  { name: '[Test] Rechte lijn 1m rechtsom', module: testStraightLine(1000) },
+  { name: '[Test] Rechte lijn 2m rechtsom', module: testStraightLine(2000) },
+  { name: '[Test] Rechte lijn 3m rechtsom', module: testStraightLine(3000) },
+  { name: '[Test] Rechte lijn 4m rechtsom', module: testStraightLine(4000) },
+  { name: '[Test] Rechte lijn 1m linksom', module: testStraightLine(1000, -1) },
+  { name: '[Test] Rechte lijn 2m linksom', module: testStraightLine(2000, -1) },
+  { name: '[Test] Rechte lijn 3m linksom', module: testStraightLine(3000, -1) },
+  { name: '[Test] Rechte lijn 4m linksom', module: testStraightLine(4000, -1) },
+  { name: '[Test] UMBMark 1m rechtsom', module: testUMBMark(1000) },
+  { name: '[Test] UMBMark 2m rechtsom', module: testUMBMark(2000) },
+  { name: '[Test] UMBMark 3m rechtsom', module: testUMBMark(3000) },
+  { name: '[Test] UMBMark 4m rechtsom', module: testUMBMark(4000) },
+  { name: '[Test] UMBMark 1m linksom', module: testUMBMark(1000, -1) },
+  { name: '[Test] UMBMark 2m linksom', module: testUMBMark(2000, -1) },
+  { name: '[Test] UMBMark 3m linksom', module: testUMBMark(3000, -1) },
+  { name: '[Test] UMBMark 4m linksom', module: testUMBMark(4000, -1) },
   { name: '[Test] Start Vector', module: startVector },
   { name: '[Test] Blik pakken', module: pickupCan },
 ];
