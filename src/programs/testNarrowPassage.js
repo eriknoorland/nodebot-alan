@@ -2,7 +2,7 @@ const scan = require('../utils/sensor/lidar/scan');
 const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
 const narrowPassage = require('../helpers/narrowPassage');
 
-module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
 
   function constructor() {
