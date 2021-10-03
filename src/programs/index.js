@@ -8,9 +8,10 @@ const remote = require('./remote');
 const testDistance = require('./testDistance');
 const testRotation = require('./testRotation');
 const testStraightLine = require('./testStraightLine');
-const startVector = require('./testStartVector');
-const pickupCan = require('./testPickupCan');
 const testUMBMark = require('./testUMBMark');
+const testStartVector = require('./testStartVector');
+const testVerifyPosition = require('./testVerifyPosition');
+const testPickupCan = require('./testPickupCan');
 
 const testPrograms = [
   { name: '[Test] Remote', module: remote },
@@ -38,8 +39,9 @@ const testPrograms = [
   { name: '[Test] UMBMark 2m linksom', module: testUMBMark(2000, -1) },
   { name: '[Test] UMBMark 3m linksom', module: testUMBMark(3000, -1) },
   { name: '[Test] UMBMark 4m linksom', module: testUMBMark(4000, -1) },
-  { name: '[Test] Start Vector', module: startVector },
-  { name: '[Test] Blik pakken', module: pickupCan },
+  { name: '[Test] Start Vector', module: testStartVector },
+  { name: '[Test] Verifieër positie', module: testVerifyPosition },
+  { name: '[Test] Blik pakken', module: testPickupCan },
 ];
 
 module.exports = [
@@ -50,7 +52,7 @@ module.exports = [
   { name: 'Lijnvolgen met Obstakel', module: lineFollower(true) },
   { name: 'T-Tijd', module: tTime() },
   { name: 'T-Tijd met smalle doorgang', module: tTime(true) },
-  // { name: 'Blikken', module: cans() },
+  { name: 'Blikken', module: cans() },
   { name: 'Blikken Retour', module: cans(true) },
   ...testPrograms,
 ];

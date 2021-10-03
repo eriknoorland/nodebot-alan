@@ -10,8 +10,8 @@ const getInitialPosition = require('../utils/motion/getInitialPosition');
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
   const { lidar } = sensors;
-  const lidarData = {};
   const startOffset = 250;
+  const lidarData = {};
 
   let heading = 0;
   let side = 'left';
@@ -46,7 +46,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 500, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 400, 0));
     await motion.stop();
 
     await crossover();
@@ -61,7 +61,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 500, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 400, 0));
     await motion.stop();
 
     missionComplete();

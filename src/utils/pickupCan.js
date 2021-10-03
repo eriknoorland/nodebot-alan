@@ -2,32 +2,23 @@ const robotlib = require('robotlib');
 const scan = require('../utils/sensor/lidar/scan');
 const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
 const filterMeasurements = require('../utils/sensor/lidar/filterMeasurements');
+const locateCan = require('./locateCan');
 
 const { pause } = robotlib.utils;
 const { deg2rad } = robotlib.utils.math;
 
 const pickupCan = async (config, lidar, motion, gripper) => {
-  const canAngleScanData = await scan(lidar, 1000);
-  const canAngleAveragedMeasurements = averageMeasurements(canAngleScanData);
-  const canAngleFilteredAngleMeasurements = filterMeasurements(canAngleAveragedMeasurements, a => a > 330 || a < 30);
-  const canAngleFilteredDistanceMeasurements = filterMeasurements(canAngleFilteredAngleMeasurements, a => canAngleFilteredAngleMeasurements[a] < (config.GRIPPER_OBSTACLE_DISTANCE + 80));
-  const normalizedAngles = Object
-    .keys(canAngleFilteredDistanceMeasurements)
-    .map(a => ({
-      angle: parseInt(a > 180 ? (360 - a) * -1 : a, 10),
-      distance: canAngleFilteredDistanceMeasurements[a],
-    }));
+  let canCenter;
 
-  const sortedAngles = normalizedAngles.slice(0).sort((a, b) => a.angle - b.angle);
-  const canCenter = sortedAngles[Math.floor(sortedAngles.length / 2)];
-
-  if (!canCenter) {
+  try {
+    canCenter = await locateCan(config, lidar);
+  } catch(error) {
     return Promise.reject();
   }
 
   const rotationAngle = canCenter.angle;
   const canDistance = canCenter.distance;
-  const lidarAngleOffset = 1;
+  const lidarAngleOffset = -1;
 
   await pause(250);
 

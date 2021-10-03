@@ -16,10 +16,6 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'backAndForth');
 
-    // const startVectorScanData = await scan(lidar, 2000);
-    // const startVectorAveragedMeasurements = averageMeasurements(startVectorScanData);
-    // solveStartVectorHough(startVectorAveragedMeasurements, arena.height, 50, motion);
-
     await solveStartVector(lidar, motion);
 
     const startPositionScanData = await scan(lidar, 2000);

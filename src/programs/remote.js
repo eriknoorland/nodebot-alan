@@ -67,8 +67,7 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   function reverse() {
     const heading = currentPose.phi || 0;
 
-    // motion.speedHeading(-config.MAX_SPEED, heading, () => {});
-    motion.distanceHeading(-250, heading);
+    motion.speedHeading(-config.MAX_SPEED, heading, () => {});
   }
 
   function stopMotors() {
