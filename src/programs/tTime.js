@@ -33,7 +33,7 @@ module.exports = (narrowPassage = false) => ({ config, arena, logger, controller
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
     motion.setTrackPose(true);
-    motion.appendPose({ x, y, phi: heading });
+    motion.appendPose({ x, y, phi: 0 });
 
     // A -> B
     const startPose = motion.getPose();
