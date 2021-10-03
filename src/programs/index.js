@@ -10,6 +10,7 @@ const testRotation = require('./testRotation');
 const testStraightLine = require('./testStraightLine');
 const testUMBMark = require('./testUMBMark');
 const testStartVector = require('./testStartVector');
+const testNarrowPassage = require('./testNarrowPassage');
 const testVerifyPosition = require('./testVerifyPosition');
 const testPickupCan = require('./testPickupCan');
 
@@ -40,6 +41,7 @@ const testPrograms = [
   { name: '[Test] UMBMark 3m linksom', module: testUMBMark(3000, -1) },
   { name: '[Test] UMBMark 4m linksom', module: testUMBMark(4000, -1) },
   { name: '[Test] Start Vector', module: testStartVector },
+  { name: '[Test] Smalle doorgang', module: testNarrowPassage },
   { name: '[Test] Verifieër positie', module: testVerifyPosition },
   { name: '[Test] Blik pakken', module: testPickupCan },
 ];
