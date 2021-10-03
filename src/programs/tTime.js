@@ -123,8 +123,7 @@ module.exports = (narrowPassage = false) => ({ config, arena, logger, controller
       // await motion.rotate(-Math.PI);
 
       // C -> center
-      await motion.distanceHeading(-centerToCDistance, Math.PI / 2);
-      await motion.stop();
+      await motion.distanceHeading(-centerToCDistance, -Math.PI / 2);
       await motion.rotate(-Math.PI / 2);
     }
 
