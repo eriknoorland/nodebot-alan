@@ -4,6 +4,7 @@ const narrowPassage = require('../helpers/narrowPassage');
 
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
+  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'testNarrowPassage');
