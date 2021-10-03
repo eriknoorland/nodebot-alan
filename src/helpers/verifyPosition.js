@@ -5,7 +5,7 @@ const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
 
 const { deg2rad } = robotlib.utils.math;
 
-const verifyPosition = (lidar, motion) => {
+const verifyPosition = async (lidar, motion) => {
   const scanData = await scan(lidar, 2000);
   const averagedMeasurements = averageMeasurements(scanData);
   const shortestRightDistance = getAngleDistance(averagedMeasurements, 90, 10);
