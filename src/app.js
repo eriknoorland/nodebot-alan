@@ -66,6 +66,7 @@ const onSocketConnection = socket => {
   socket.on('stop', onStop);
   socket.on('reboot', onReboot);
   socket.on('shutdown', onShutdown);
+  socket.on('emergencyStop', onEmergencyStop);
   socket.on('selected_arena', selectedArena => {
     logger.log(`arena selected - ${selectedArena.name}`, 'app');
     defaultProgramOptions.arena = selectedArena;
@@ -122,6 +123,14 @@ const onShutdown = async () => {
   await exitHandler();
 
   shell.exec('sudo shutdown -h now');
+};
+
+const onEmergencyStop = () => {
+  logger.log('emergency stop!', 'app', 'red');
+
+  if (defaultProgramOptions.controllers.motion) {
+    defaultProgramOptions.controllers.motion.emergencyStop();
+  }
 };
 
 const initUSBDevices = async ({ lidar, gripper, lineSensor, motion }) => {
