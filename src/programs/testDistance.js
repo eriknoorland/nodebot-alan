@@ -16,8 +16,10 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
       totalRightTicks += rightTicks;
     });
 
+    const startPose = { x: 200, y: arena.height * 0.75, phi: 0 };
+
     motion.setTrackPose(true);
-    motion.appendPose({ x: 200, y: arena.height * 0.75, phi: 0 });
+    motion.appendPose(startPose);
 
     console.log(
       config.LEFT_WHEEL_DIAMETER,
@@ -28,23 +30,22 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
       config.RIGHT_DISTANCE_PER_TICK,
     );
 
-    await motion.distanceCalibrationTest(distance);
+    // await motion.distanceCalibrationTest(distance);
+    await motion.distanceHeading(distance, 0);
+
+    const endPose = motion.getPose();
+    const poseDiffX = endPose.x - startPose.x;
 
     console.log({
       totalLeftTicks,
       totalRightTicks,
+      poseDiffX,
     });
 
     console.log('virtual distance left:', totalLeftTicks * config.LEFT_DISTANCE_PER_TICK);
     console.log('virtual distance right:', totalRightTicks * config.RIGHT_DISTANCE_PER_TICK);
 
     testComplete();
-  }
-
-  function loop() {
-    return new Promise(resolve => {
-      const interval = setInterval();
-    });
   }
 
   function stop() {
