@@ -15,13 +15,13 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   async function start() {
     logger.log('start', 'remote');
 
-    // const scanData = await scan(lidar, 2000);
-    // const averagedMeasurements = averageMeasurements(scanData);
-    // const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
+    const scanData = await scan(lidar, 2000);
+    const averagedMeasurements = averageMeasurements(scanData);
+    const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
     motion.on('pose', onPose);
     motion.setTrackPose(true);
-    motion.appendPose({ x: 190, y: arena.height * 0.75, phi: 0 }); // FIXME after start vector solving
+    motion.appendPose({ x, y, phi: 0 });
 
     socket.on('ArrowUp', forward);
     socket.on('ArrowDown', reverse);

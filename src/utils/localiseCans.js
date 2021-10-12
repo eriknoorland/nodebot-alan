@@ -9,7 +9,7 @@ const localiseCans = async (scanRadius, matrix, pose, lidar) => {
   const angleFilteredMeasurements = filterMeasurements(averagedMeasurements, a => a >= 270 || a <= 90);
   const distanceFilteredMeasurements = filterMeasurements(angleFilteredMeasurements, a => angleFilteredMeasurements[a] < scanRadius);
 
-  return  obstacleDetection(matrix, pose, distanceFilteredMeasurements);
+  return obstacleDetection(matrix, pose, distanceFilteredMeasurements);
 };
 
 module.exports = localiseCans;

@@ -1,4 +1,7 @@
+const robotlib = require('robotlib');
 const getAngleDistance = require('../sensor/lidar/getAngleDistance');
+
+const { pause } = robotlib.utils;
 
 /**
  *
@@ -20,8 +23,11 @@ const gotoStartPosition = async (measurements, motion, centerOffset = 0) => {
   }
 
   await motion.rotate(angle);
+  await pause(250);
   await motion.distanceHeading(distance, angle);
+  await pause(250);
   await motion.rotate(angle * -1);
+  await pause(250);
 
   return Promise.resolve();
 };

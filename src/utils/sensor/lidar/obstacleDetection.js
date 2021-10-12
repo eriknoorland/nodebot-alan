@@ -3,7 +3,6 @@ const cellStates = require('../../cellStates');
 
 const { calculateDistance, deg2rad, numberInRange } = robotlib.utils.math;
 
-// TODO verify this new check
 const checkCells = (matrix, row, column) => {
   for (let r = -1; r <= 1; r += 1) {
     for (let c = -1; c <= 1; c += 1) {
@@ -14,20 +13,10 @@ const checkCells = (matrix, row, column) => {
   }
 
   return true;
-
-  // return matrix[row - 1][column - 1] === 2
-  //   && matrix[row - 1][column] === 2
-  //   && matrix[row - 1][column + 1] === 2
-
-  //   && matrix[row][column - 1] === 2
-  //   && matrix[row][column + 1] === 2
-
-  //   && matrix[row + 1][column - 1] === 2
-  //   && matrix[row + 1][column] === 2
-  //   && matrix[row + 1][column + 1] === 2
 }
 
 const canDetection = (matrix, pose, lidarData, resolution = 50) => {
+  const minObstacleDistance = 200;
   const obstacles = [];
 
   Object
@@ -46,11 +35,10 @@ const canDetection = (matrix, pose, lidarData, resolution = 50) => {
 
       const isWithinYLimits = numberInRange(row, columnOffset, matrix.length - (1 + columnOffset));
       const isWithinXLimits = isWithinYLimits && numberInRange(column, columnOffset, matrix[row].length - (1 + columnOffset));
-      // const isWithinBounds = isWithinXLimits && matrix[row][column] > 1;
-      const isWithinBounds = isWithinXLimits && /*matrix[row][column] > 1 &&*/ checkCells(matrix, row, column);
+      const isWithinBounds = isWithinXLimits && checkCells(matrix, row, column);
 
       if (isWithinBounds) {
-        const nearbyObstacles = obstacles.filter(knownObstacle => calculateDistance(knownObstacle, obstacle) < 80);
+        const nearbyObstacles = obstacles.filter(knownObstacle => calculateDistance(knownObstacle, obstacle) < minObstacleDistance);
 
         if (!nearbyObstacles.length) {
           obstacles.push({
