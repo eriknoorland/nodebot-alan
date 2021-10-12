@@ -139,13 +139,15 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
         matrix[obstacle.row][obstacle.column] = cellStates.EMPTY;
         numStoredCans += 1;
-
-        if (numStoredCans < maxNumCans && !isAtLastScanPosition && numStoredCans % 2 === 0) {
-          await verifyPosition(startPosition);
-        }
       };
 
-      if (numStoredCans === maxNumCans || isAtLastScanPosition) {
+      const areAllCansStored = numStoredCans === maxNumCans;
+
+      if (localisedCans.length && !areAllCansStored && !isAtLastScanPosition) {
+        await verifyPosition(startPosition);
+      }
+
+      if (areAllCansStored || isAtLastScanPosition) {
         const currentPose = motion.getPose();
         const inSquareA = currentPose.x < 500;
         const currentlyInSquareC = currentPose.y <= halfArenaHeight;
