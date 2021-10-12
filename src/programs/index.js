@@ -1,7 +1,7 @@
 const backAndForth = require('./backAndForth');
 const superSlalom = require('./superSlalom2');
 const lineFollower = require('./lineFollower');
-const tTime = require('./tTime');
+const tTime = require('./tTime2');
 const cans = require('./cans');
 const remote = require('./remote');
 

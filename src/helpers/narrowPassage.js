@@ -15,7 +15,7 @@ const getScanRange = (range, angle) => {
   return angle >= (360 - range) || angle <= range;
 }
 
-const narrowPassage = (motion, lidarData) => {
+const narrowPassage = async (motion, lidarData) => {
   const measurements = Object.keys(lidarData)
     .filter(getScanRange.bind(null, 50))
     .reduce(scanData2Array.bind(null, lidarData), [])
@@ -45,25 +45,33 @@ const narrowPassage = (motion, lidarData) => {
 
   const gapAngle = Math.round((gap.minAngle + gap.maxAngle) / 2);
   const normalizedGapAngle = (360 + gapAngle) % 360;
-  const sideDistanceOffset = Math.floor(gapAngle / 15) * 25;
+  // const sideDistanceOffset = Math.floor(gapAngle / 15) * 25;
 
-  const sideDistance = (distanceToObstacleLine * Math.tan(deg2rad(normalizedGapAngle))) + sideDistanceOffset;
-  const forwardDistance = distanceToObstacleLine - 150; // was 250
+  console.log({
+    gapAngle,
+    normalizedGapAngle,
+    // sideDistanceOffset,
+  });
+
+  const sideDistance = (distanceToObstacleLine * Math.tan(deg2rad(normalizedGapAngle))); // + sideDistanceOffset;
+  const forwardDistance = distanceToObstacleLine - 250;
   const turnAngle = Math.atan(sideDistance / forwardDistance);
   const driveDistance = Math.round((Math.sqrt(Math.pow(forwardDistance, 2) + Math.pow(sideDistance, 2))));
 
   console.log({
+    sideDistance,
+    // forwardDistance,
     turnAngle,
     driveDistance,
   });
 
   // move to gap
-  // await motion.rotate(turnAngle);
-  // await motion.distanceHeading(driveDistance, (-Math.PI / 2) + turnAngle);
-  // await motion.rotate(turnAngle * -1);
+  await motion.rotate(turnAngle);
+  await motion.distanceHeading(driveDistance, turnAngle);
+  await motion.rotate(turnAngle * -1);
 
   // go trough gap
-  // await motion.speedHeading(200 / 2, -Math.PI / 2, isWithinDistance(lidar, 250, 0));
+  // await motion.speedHeading(200 / 2, 0, isWithinDistance(lidar, 250, 0));
   // await motion.stop();
 
   return Promise.resolve();
