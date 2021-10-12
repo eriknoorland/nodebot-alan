@@ -45,8 +45,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
   async function start() {
     logger.log('start', 'cans');
 
-    await verifyPosition();
-
+    const initialPosition = await verifyPosition();
     const startPosition = { ...initialPosition };
 
     if (startPosition.x < 450) {
@@ -186,7 +185,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
     motion.setTrackPose(true);
     motion.appendPose({ ...position, phi: 0 });
 
-    return Promise.resolve();
+    return Promise.resolve(position);
   }
 
   function stop() {
