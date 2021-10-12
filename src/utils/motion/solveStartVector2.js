@@ -58,41 +58,41 @@ const solveStartVector = async (lidar, motion) => {
   await motion.rotate(correctionAngle * side.multiplier);
   await pause(250);
 
-  const testVerificationMeasurements = await scan(lidar, 2000);
-  const testVerificationAveragedMeasurements = averageMeasurements(testVerificationMeasurements);
-  const testVerificationAngleOffset = 30;
+  // const testVerificationMeasurements = await scan(lidar, 2000);
+  // const testVerificationAveragedMeasurements = averageMeasurements(testVerificationMeasurements);
+  // const testVerificationAngleOffset = 30;
 
-  const a = testVerificationAveragedMeasurements[side.angle];
-  const o = Math.tan(deg2rad(testVerificationAngleOffset)) * a;
-  const s = Math.sqrt(Math.pow(a, 2) + Math.pow(o, 2));
-  const A = testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset] - s;
-  const b = (Math.tan(A / o) * (side.multiplier * -1)) / 2;
+  // const a = testVerificationAveragedMeasurements[side.angle];
+  // const o = Math.tan(deg2rad(testVerificationAngleOffset)) * a;
+  // const s = Math.sqrt(Math.pow(a, 2) + Math.pow(o, 2));
+  // const A = testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset] - s;
+  // const b = (Math.tan(A / o) * (side.multiplier * -1)) / 2;
 
-  console.log(
-    testVerificationAveragedMeasurements[side.angle - testVerificationAngleOffset],
-    testVerificationAveragedMeasurements[side.angle],
-    testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset],
-    {
-      a,
-      o,
-      s,
-      A,
-      b,
-    },
-    rad2deg(b),
-  );
+  // console.log(
+  //   testVerificationAveragedMeasurements[side.angle - testVerificationAngleOffset],
+  //   testVerificationAveragedMeasurements[side.angle],
+  //   testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset],
+  //   {
+  //     a,
+  //     o,
+  //     s,
+  //     A,
+  //     b,
+  //   },
+  //   rad2deg(b),
+  // );
 
-  await motion.rotate(b);
-  await pause(250);
+  // await motion.rotate(b);
+  // await pause(250);
 
-  const testVerificationMeasurements1 = await scan(lidar, 2000);
-  const testVerificationAveragedMeasurements1 = averageMeasurements(testVerificationMeasurements1);
+  // const testVerificationMeasurements1 = await scan(lidar, 2000);
+  // const testVerificationAveragedMeasurements1 = averageMeasurements(testVerificationMeasurements1);
 
-  console.log(
-    testVerificationAveragedMeasurements1[side.angle - testVerificationAngleOffset],
-    testVerificationAveragedMeasurements1[side.angle],
-    testVerificationAveragedMeasurements1[side.angle + testVerificationAngleOffset],
-  );
+  // console.log(
+  //   testVerificationAveragedMeasurements1[side.angle - testVerificationAngleOffset],
+  //   testVerificationAveragedMeasurements1[side.angle],
+  //   testVerificationAveragedMeasurements1[side.angle + testVerificationAngleOffset],
+  // );
 
   motion.appendPose({ x: 0, y: 0, phi: 0 });
 
