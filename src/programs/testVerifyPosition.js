@@ -1,6 +1,6 @@
 const verifyPosition = require('../helpers/verifyPosition');
 
-module.exports = () => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
   const { lidar } = sensors;
 
@@ -11,7 +11,7 @@ module.exports = () => ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'testVerifyPosition');
 
-    await verifyPosition(lidar, motion);
+    await verifyPosition(arena, lidar, motion);
 
     testComplete();
   }
