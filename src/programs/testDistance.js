@@ -30,7 +30,6 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
       config.RIGHT_DISTANCE_PER_TICK,
     );
 
-    // await motion.distanceCalibrationTest(distance);
     await motion.distanceHeading(distance, 0);
 
     const endPose = motion.getPose();
