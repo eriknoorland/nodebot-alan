@@ -139,7 +139,7 @@ const initUSBDevices = async ({ lidar, gripper, lineSensor, motion }) => {
   logger.log('start initializing usb devices...');
 
   try {
-    usbDevices.lidar = await initLidar(lidar);
+    usbDevices.lidar = await initLidar(lidar, config);
     logger.log(`lidar initialized!`, 'app', 'cyan');
   } catch(error) {
     logger.log(error, 'app', 'red');
