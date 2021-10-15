@@ -11,7 +11,8 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'testVerifyPosition');
 
-    await verifyPosition(arena, lidar, motion);
+    const verifiedPosition = await verifyPosition(arena, lidar);
+    console.log({ verifiedPosition });
 
     testComplete();
   }

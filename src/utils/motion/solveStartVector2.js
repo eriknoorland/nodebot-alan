@@ -4,6 +4,7 @@ const getAngleDistance = require('../sensor/lidar/getAngleDistance');
 const getLongestDistance = require('../sensor/lidar/getLongestDistance');
 const scanObject2Array = require('../sensor/lidar/scanObject2Array');
 const scan = require('../sensor/lidar/scan');
+const verifyRotation = require('../../helpers/verifyRotation');
 
 const { pause } = robotlib.utils;
 const { deg2rad, rad2deg } = robotlib.utils.math;
@@ -58,6 +59,9 @@ const solveStartVector = async (lidar, motion) => {
   await motion.rotate(correctionAngle * side.multiplier);
   await pause(250);
 
+  await verifyRotation(lidar, motion, side.angle, 60);
+  await pause(250);
+
   // const testVerificationMeasurements = await scan(lidar, 2000);
   // const testVerificationAveragedMeasurements = averageMeasurements(testVerificationMeasurements);
   // const testVerificationAngleOffset = 30;
@@ -66,19 +70,13 @@ const solveStartVector = async (lidar, motion) => {
   // const o = Math.tan(deg2rad(testVerificationAngleOffset)) * a;
   // const s = Math.sqrt(Math.pow(a, 2) + Math.pow(o, 2));
   // const A = testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset] - s;
-  // const b = (Math.tan(A / o) * (side.multiplier * -1)) / 2;
+  // const b = Math.tan(A / o) * -1;
 
   // console.log(
   //   testVerificationAveragedMeasurements[side.angle - testVerificationAngleOffset],
   //   testVerificationAveragedMeasurements[side.angle],
   //   testVerificationAveragedMeasurements[side.angle + testVerificationAngleOffset],
-  //   {
-  //     a,
-  //     o,
-  //     s,
-  //     A,
-  //     b,
-  //   },
+  //   { a, o, s, A, b },
   //   rad2deg(b),
   // );
 
