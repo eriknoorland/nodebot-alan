@@ -4,23 +4,23 @@ const lineFollower = require('./lineFollower');
 const tTime = require('./tTime2');
 const cans = require('./cans');
 
-const remote = require('./remote');
-const testDistance = require('./testDistance');
-const testHeading = require('./testHeading');
-const testRotation = require('./testRotation');
-const testStraightLine = require('./testStraightLine');
-const testLidarAlignment = require('./testLidarAlignment');
-const testUMBMark = require('./testUMBMark');
-const testStartVector = require('./testStartVector');
-const testStartPosition = require('./testStartPosition');
-const testNarrowPassage = require('./testNarrowPassage');
-const testVerifyRotation = require('./testVerifyRotation');
-const testVerifyPosition = require('./testVerifyPosition');
-const testPickupCan = require('./testPickupCan');
+const testRemote = require('./remote');
+const testDistance = require('./test/distance');
+const testHeading = require('./test/heading');
+const testRotation = require('./test/rotation');
+const testStraightLine = require('./test/straightLine');
+const testLidarAlignment = require('./test/lidarAlignment');
+const testUMBMark = require('./test/umbMark');
+const testStartVector = require('./test/startVector');
+const testStartPosition = require('./test/startPosition');
+const testNarrowPassage = require('./test/narrowPassage');
+const testVerifyRotation = require('./test/verifyRotation');
+const testVerifyPosition = require('./test/verifyPosition');
+const testPickupCan = require('./test/pickupCan');
 
 const testPrograms = [
   { name: '--', module: () => {} },
-  { name: '[Test] Remote', module: remote },
+  { name: '[Test] Remote', module: testRemote },
   { name: '[Test] Rechtuit 1m', module: testDistance(1000) },
   { name: '[Test] Rechtuit 2m', module: testDistance(2000) },
   { name: '[Test] Rechtuit 3m', module: testDistance(3000) },
@@ -62,7 +62,7 @@ const testPrograms = [
   { name: '[Test] Verifieër rotatie links', module: testVerifyRotation(270) },
   { name: '[Test] Verifieër positie', module: testVerifyPosition },
   { name: '[Test] Blik pakken', module: testPickupCan },
-  { name: '[Test] Remote', module: remote },
+  { name: '[Test] Remote', module: testRemote },
 ];
 
 module.exports = [

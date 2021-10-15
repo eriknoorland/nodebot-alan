@@ -1,4 +1,4 @@
-const verifyPosition = require('../helpers/verifyPosition');
+const verifyPosition = require('../../helpers/verifyPosition');
 
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;

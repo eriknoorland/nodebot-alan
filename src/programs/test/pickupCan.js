@@ -1,10 +1,10 @@
 const robotlib = require('robotlib');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const scanObject2Array = require('../utils/sensor/lidar/scanObject2Array');
-const getShortestDistance = require('../utils/sensor/lidar/getShortestDistance');
-const pickupCan = require('../utils/pickupCan');
-const dropCan = require('../utils/dropCan');
+const scan = require('../../utils/sensor/lidar/scan');
+const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
+const scanObject2Array = require('../../utils/sensor/lidar/scanObject2Array');
+const getShortestDistance = require('../../utils/sensor/lidar/getShortestDistance');
+const pickupCan = require('../../utils/pickupCan');
+const dropCan = require('../../utils/dropCan');
 
 const { deg2rad } = robotlib.utils.math;
 

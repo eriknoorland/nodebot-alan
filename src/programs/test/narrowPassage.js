@@ -1,6 +1,6 @@
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const narrowPassage = require('../helpers/narrowPassage');
+const scan = require('../../utils/sensor/lidar/scan');
+const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
+const narrowPassage = require('../../helpers/narrowPassage');
 
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;

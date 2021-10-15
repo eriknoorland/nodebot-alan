@@ -1,4 +1,4 @@
-const verifyRotation = require('../helpers/verifyRotation');
+const verifyRotation = require('../../helpers/verifyRotation');
 
 module.exports = angle => ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;

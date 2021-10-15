@@ -1,7 +1,7 @@
 // const scan = require('../utils/sensor/lidar/scan');
 // const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
 // const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
-const solveStartVector = require('../utils/motion/solveStartVector2');
+const solveStartVector = require('../../utils/motion/solveStartVector2');
 
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;

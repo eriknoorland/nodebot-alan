@@ -1,7 +1,7 @@
 const robotlib = require('robotlib');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const filterMeasurements = require('../utils/sensor/lidar/filterMeasurements');
+const scan = require('../../utils/sensor/lidar/scan');
+const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
+const filterMeasurements = require('../../utils/sensor/lidar/filterMeasurements');
 
 const { deg2rad } = robotlib.utils.math;
 

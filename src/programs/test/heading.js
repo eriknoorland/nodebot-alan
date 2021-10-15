@@ -1,10 +1,10 @@
-
-const robotlib = require('robotlib');const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const solveStartVector = require('../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../utils/motion/gotoStartPosition');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
-const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
+const robotlib = require('robotlib');
+const scan = require('../../utils/sensor/lidar/scan');
+const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
+const solveStartVector = require('../../utils/motion/solveStartVector2');
+const gotoStartPosition = require('../../utils/motion/gotoStartPosition');
+const getInitialPosition = require('../../utils/motion/getInitialPosition');
+const getAngleDistance = require('../../utils/sensor/lidar/getAngleDistance');
 
 const { pause } = robotlib.utils;
 
