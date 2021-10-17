@@ -15,30 +15,25 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'testCanDetection');
 
-    const scanPositions = [
-      { x: 450, y: 1800, heading: 0 },
-      { x: 1250, y: 1800, heading: 0 },
-      { x: 2050, y: 1800, heading: 0 },
-      { x: 2850, y: 1800, heading: 0 },
-      { x: 1800, y: 1100, heading: -(Math.PI / 2) },
-      { x: 1800, y: 600, heading: -(Math.PI / 2) },
-    ];
+    const matrixResolution = 30;
 
-    const scanPosition = scanPositions[2];
+    motion.setTrackPose(true);
+
     const scanRadius = 900;
-    const scanPose = { ...scanPosition, phi: scanPosition.heading };
-    const matrix = getArenaMatrix(arena.width, arena.height);
+    const matrix = getArenaMatrix(arena.width, arena.height, matrixResolution);
 
-    console.log(motion.getPose());
     await verifyRotation(lidar, motion, 90, 60);
     await verifyPosition(arena, lidar, motion, 0);
-    console.log(motion.getPose());
 
-    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar);
+    const scanPose = motion.getPose();
+    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar, matrixResolution);
 
-    console.log(localisedCans);
+    // mark matrix
+    const pose = motion.getPose();
+    const row = Math.floor(pose.y / matrixResolution);
+    const column = Math.floor(pose.x / matrixResolution);
 
-    // mark cans in matrix
+    matrix[row][column] = '|';
     localisedCans.forEach(({ row, column }) => matrix[row][column] = cellStates.OBSTACLE);
 
     // visualize

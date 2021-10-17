@@ -11,7 +11,11 @@ module.exports = angle => ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'testVerifyRotation');
 
+    motion.setTrackPose(true);
+
     await verifyRotation(lidar, motion, angle, 90);
+
+    motion.setTrackPose(false);
 
     testComplete();
   }

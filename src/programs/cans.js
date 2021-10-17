@@ -19,7 +19,7 @@ const { calculateDistance } = robotlib.utils.math;
 module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, controllers, sensors }) => {
   const { motion, gripper } = controllers;
   const { lidar } = sensors;
-  const matrix = getArenaMatrix(arena.width, arena.height);
+  const matrix = getArenaMatrix(arena.width, arena.height, 30);
   const halfArenaHeight = arena.height / 2;
   const maxNumCans = 6;
   const canStoreCoordinates = [
@@ -97,13 +97,13 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       await motion.move2XYPhi(scanPosition, scanPosition.heading);
       await pause(250);
 
-      // if (scanPosition.heading === 0) {
-      //   await verifyRotation(lidar, motion, 90, 60);
-      //   await verifyPosition(arena, lidar, motion, 0);
-      // }
+      if (scanPosition.heading === 0) {
+        await verifyRotation(lidar, motion, 90, 60);
+        await verifyPosition(arena, lidar, motion, 0);
+      }
 
       const scanPose = motion.getPose();
-      const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar);
+      const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar, 30);
       const sortedLocalisedCans = [...localisedCans].sort((a, b) => calculateDistance(scanPose, a) - calculateDistance(scanPose, b));
 
       sortedLocalisedCans.forEach(({ row, column }) => matrix[row][column] = cellStates.OBSTACLE);
@@ -151,6 +151,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           await motion.move2XYPhi(verificationPosition, 0);
           await verifyRotation(lidar, motion, 90, 60);
           await verifyPosition(arena, lidar, motion, 0);
+          await pause(250);
         } else {
           try {
             await locateCan(config, lidar);
