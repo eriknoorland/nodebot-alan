@@ -26,8 +26,8 @@ const canDetection = (matrix, pose, lidarData, resolution = 50) => {
       const angle = parseInt(key, 10);
       const distance = lidarData[key];
       const obstacle = {
-        x: pose.x + Math.cos(deg2rad(angle)) * distance,
-        y: pose.y + Math.sin(deg2rad(angle)) * distance,
+        x: pose.x + Math.cos(pose.phi + deg2rad(angle)) * distance,
+        y: pose.y + Math.sin(pose.phi + deg2rad(angle)) * distance,
       };
       const column = Math.floor(obstacle.x / resolution);
       const row = Math.floor(obstacle.y / resolution);
