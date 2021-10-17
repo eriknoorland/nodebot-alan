@@ -116,6 +116,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
       for (let obstacleIndex = 0; obstacleIndex < sortedLocalisedCans.length; obstacleIndex += 1) {
         const obstacle = sortedLocalisedCans[obstacleIndex];
+        const isLastObstacle = obstacleIndex === sortedLocalisedCans.length - 1;
 
         if (obstacleIndex !== 0 && isPositionInAreaC(halfArenaHeight, obstacle)) {
           await motion.move2XY(arenaCenterPosition);
@@ -148,10 +149,12 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           await motion.distanceHeading(-150, motion.getPose().phi);
           await pause(250);
 
-          await motion.move2XYPhi(verificationPosition, 0);
-          await verifyRotation(lidar, motion, 90, 60);
-          await verifyPosition(arena, lidar, motion, 0);
-          await pause(250);
+          if (!isAtLastScanPosition && !isLastObstacle) {
+            await motion.move2XYPhi(verificationPosition, 0);
+            await verifyRotation(lidar, motion, 90, 60);
+            await verifyPosition(arena, lidar, motion, 0);
+            await pause(250);
+          }
         } else {
           try {
             await locateCan(config, lidar);
@@ -171,12 +174,15 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       };
 
       const areAllCansStored = numStoredCans === maxNumCans;
+      console.log({ areAllCansStored, isAtLastScanPosition });
 
       if (areAllCansStored || isAtLastScanPosition) {
+        console.log('we should be done...');
         const currentPose = motion.getPose();
-        const inSquareA = currentPose.x < 500;
+        const inSquareA = currentPose.x < 450;
 
         if (!inSquareA) {
+          console.log('we\'re not home yet');
           if (isPositionInAreaC(halfArenaHeight, currentPose)) {
             console.log('move to center square');
             await motion.move2XY(arenaCenterPosition);
