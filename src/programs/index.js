@@ -17,6 +17,7 @@ const testNarrowPassage = require('./test/narrowPassage');
 const testVerifyRotation = require('./test/verifyRotation');
 const testVerifyPosition = require('./test/verifyPosition');
 const testPickupCan = require('./test/pickupCan');
+const testCanDetection = require('./test/canDetection');
 
 const testPrograms = [
   { name: '--', module: () => {} },
@@ -62,6 +63,7 @@ const testPrograms = [
   { name: '[Test] Verifieër rotatie links', module: testVerifyRotation(270) },
   { name: '[Test] Verifieër positie', module: testVerifyPosition },
   { name: '[Test] Blik pakken', module: testPickupCan },
+  { name: '[Test] Blikken detecteren', module: testCanDetection },
   { name: '[Test] Remote', module: testRemote },
 ];
 
