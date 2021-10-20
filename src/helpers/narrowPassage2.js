@@ -28,7 +28,6 @@ function isAtAreaC(lidar, minDistance, checkAngle) {
 }
 
 function findGap(motion, lidarData) {
-  // let isAtFirstCan = false;
   let hasCounterStarted = false;
   let startPose;
 
@@ -39,37 +38,29 @@ function findGap(motion, lidarData) {
       const minDistance = getAngleDistance(lidarData, 90, 1);
       const maxDistance = getAngleDistance(lidarData, 90, 1, 'max');
 
-      // if (!isAtFirstCan && minDistance < 1000) {
-      //   console.log('findGap - is at first can');
-      //   isAtFirstCan = true;
-      // }
+      if (!hasCounterStarted && maxDistance > 1000) {
+        // console.log('findGap - gap counter started');
+        hasCounterStarted = true;
+        startPose = motion.getPose();
+      }
 
-      // if (isAtFirstCan) {
-        if (!hasCounterStarted && maxDistance > 1000) {
-          console.log('findGap - gap counter started');
-          hasCounterStarted = true;
-          startPose = motion.getPose();
+      if (hasCounterStarted) {
+        const currentPose = motion.getPose();
+        const distanceTravelled = calculateDistance(startPose, currentPose);
+
+        if (distanceTravelled >= 105) {
+          // console.log('findGap - gap found');
+          clearInterval(interval);
+          resolve();
+          return;
         }
 
-        if (hasCounterStarted) {
-          const currentPose = motion.getPose();
-          const distanceTravelled = calculateDistance(startPose, currentPose);
-          // console.log({ distanceTravelled });
-
-          if (distanceTravelled >= 120) {
-            console.log('findGap - gap found');
-            clearInterval(interval);
-            resolve();
-            return;
-          }
-
-          if (minDistance < 1000 && distanceTravelled > 80) {
-            console.log('findGap - gap counter reset');
-            hasCounterStarted = false;
-          }
+        if (minDistance < 1000 && distanceTravelled > 80) {
+          // console.log('findGap - gap counter reset');
+          hasCounterStarted = false;
         }
-      // }
-    }, 20);
+      }
+    }, 10);
   });
 }
 
@@ -79,6 +70,8 @@ const narrowPassage = async (config, lidar, motion) => {
   const onLidarData = ({ angle, distance }) => {
     if (distance) {
       lidarData[Math.round(angle)] = distance;
+    } else {
+      delete lidarData[Math.round(angle)];
     }
   };
 

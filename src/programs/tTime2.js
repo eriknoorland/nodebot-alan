@@ -38,14 +38,14 @@ module.exports = (doNarrowPassage = false) => ({ config, arena, logger, controll
     await motion.rotate(-Math.PI);
     await pause(250);
 
-    await motion.speedHeading(-config.MAX_SPEED, Math.PI, isWithinDistance(lidar, 500, 180));
+    await motion.speedHeading(-config.MAX_SPEED, Math.PI, isWithinDistance(lidar, 400, 180));
     await motion.stop();
     await pause(250);
 
     await narrowPassage(config, lidar, motion);
 
     // center -> A
-    await motion.speedHeading(config.MAX_SPEED, Math.PI, isWithinDistance(lidar, 500, 0));
+    await motion.speedHeading(config.MAX_SPEED, Math.PI, isWithinDistance(lidar, 400, 0));
     await motion.stop();
 
     missionComplete();
