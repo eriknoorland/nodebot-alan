@@ -15,7 +15,7 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   async function start() {
     logger.log('start', 'remote');
 
-    const scanData = await scan(lidar, 2000);
+    const scanData = await scan(lidar, 1000);
     const averagedMeasurements = averageMeasurements(scanData);
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 

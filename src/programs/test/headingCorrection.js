@@ -5,6 +5,7 @@ const solveStartVector = require('../../utils/motion/solveStartVector2');
 const getInitialPosition = require('../../utils/motion/getInitialPosition');
 
 const { pause } = robotlib.utils;
+const { deg2rad } = robotlib.utils.math;
 
 module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
@@ -17,6 +18,11 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
   async function start() {
     logger.log('start', 'testHeadingCorrection');
 
+    // simple test
+    // motion.setTrackPose(true);
+    // motion.appendPose({ x: 200, y: arena.height * 0.75, phi: 0 });
+    // await motion.distanceHeading(distance, deg2rad(5));
+
     await solveStartVector(lidar, motion);
     await pause(250);
 
@@ -27,16 +33,10 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
     motion.setTrackPose(true);
     motion.appendPose({ x, y, phi: 0 });
 
-    console.log('a', motion.getPose());
-
-    await motion.rotate(Math.PI / 6);
-    await pause(250);
-
-    console.log('b', motion.getPose());
+    await motion.rotate(deg2rad(5));
+    await pause(1000);
 
     await motion.distanceHeading(distance, 0);
-
-    console.log('c', motion.getPose());
 
     testComplete();
   }
