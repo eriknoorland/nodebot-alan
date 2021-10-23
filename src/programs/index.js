@@ -7,6 +7,7 @@ const cans = require('./cans');
 const testRemote = require('./remote');
 const testDistance = require('./test/distance');
 const testHeading = require('./test/heading');
+const testHeadingCorrection = require('./test/headingCorrection');
 const testRotation = require('./test/rotation');
 const testStraightLine = require('./test/straightLine');
 const testLidarAlignment = require('./test/lidarAlignment');
@@ -29,6 +30,9 @@ const testPrograms = [
   { name: '[Test] Heading 1m', module: testHeading(1000) },
   { name: '[Test] Heading 2m', module: testHeading(2000) },
   { name: '[Test] Heading 3m', module: testHeading(3000) },
+  { name: '[Test] Heading correctie 1m', module: testHeadingCorrection(1000) },
+  { name: '[Test] Heading correctie 2m', module: testHeadingCorrection(2000) },
+  { name: '[Test] Heading correctie 3m', module: testHeadingCorrection(3000) },
   { name: '[Test] Draai 1x rond CW', module: testRotation(1) },
   { name: '[Test] Draai 5x rond CW', module: testRotation(5) },
   { name: '[Test] Draai 10x rond CW', module: testRotation(10) },
