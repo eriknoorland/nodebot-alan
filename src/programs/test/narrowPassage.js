@@ -1,6 +1,7 @@
 const scan = require('../../utils/sensor/lidar/scan');
 const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
 const narrowPassage = require('../../helpers/narrowPassage');
+const verifyRotation = require('../../helpers/verifyRotation');
 
 module.exports = ({ config, arena, logger, controllers, sensors }) => {
   const { motion } = controllers;
@@ -15,6 +16,9 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
 
     const scanData = await scan(lidar, 2000);
     const averagedScanData = averageMeasurements(scanData);
+
+    await verifyRotation(lidar, motion, 90, 60);
+    await pause(250);
 
     await narrowPassage(motion, averagedScanData);
 

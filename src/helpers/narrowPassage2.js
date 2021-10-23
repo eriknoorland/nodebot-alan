@@ -5,28 +5,6 @@ const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
 const { pause } = robotlib.utils;
 const { calculateDistance } = robotlib.utils.math;
 
-function isAtAreaC(lidar, minDistance, checkAngle) {
-  let atAreaC = false;
-  let count = 0;
-
-  const onLidarData = ({ quality, angle, distance }) => {
-    if (quality > 10 && Math.floor(angle) === checkAngle) {
-      if (distance > 0 && distance >= minDistance) {
-        count += 1;
-
-        if (count % 2 === 0) {
-          atAreaC = true;
-          lidar.off('data', onLidarData);
-        }
-      }
-    }
-  };
-
-  lidar.on('data', onLidarData);
-
-  return () => atAreaC;
-}
-
 function findGap(motion, lidarData) {
   let hasCounterStarted = false;
   let startPose;
