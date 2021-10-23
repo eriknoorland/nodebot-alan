@@ -28,9 +28,14 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
     motion.appendPose({ x, y, phi: 0 });
 
     console.log('a', motion.getPose());
+
     await motion.rotate(Math.PI / 6);
+    await pause(250);
+
     console.log('b', motion.getPose());
+
     await motion.distanceHeading(distance, 0);
+
     console.log('c', motion.getPose());
 
     testComplete();
