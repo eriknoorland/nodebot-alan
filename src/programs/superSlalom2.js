@@ -30,13 +30,13 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
 
     await solveStartVector(lidar, motion);
 
-    const startPositionScanData = await scan(lidar, 2000);
+    const startPositionScanData = await scan(lidar, 1000);
     const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
     await gotoStartPosition(startPositionAveragedMeasurements, motion, startOffset);
 
     await verifyRotation(lidar, motion, 90, 60);
 
-    const initialPositionScanData = await scan(lidar, 2000);
+    const initialPositionScanData = await scan(lidar, 1000);
     const averagedMeasurements = averageMeasurements(initialPositionScanData);
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
