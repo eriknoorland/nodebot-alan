@@ -25,10 +25,10 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
   const canStoreCoordinates = [
     { x: 100, y: 150 + halfArenaHeight },
     { x: 100, y: 300 + halfArenaHeight },
-    { x: 100, y: 450 + halfArenaHeight },
     { x: 250, y: 150 + halfArenaHeight },
     { x: 250, y: 300 + halfArenaHeight },
-    { x: 250, y: 450 + halfArenaHeight },
+    { x: 400, y: 150 + halfArenaHeight },
+    { x: 400, y: 300 + halfArenaHeight },
   ];
 
   const endPosition = {
@@ -77,8 +77,11 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
     const scanRadius = arena.width / 4;
     const scanPositions = [
       { ...startPosition, heading: 0 },
+      { x: 850, y: initialPosition.y, heading: 0 },
       { x: 1250, y: initialPosition.y, heading: 0 },
+      { x: 1650, y: initialPosition.y, heading: 0 },
       { x: 2050, y: initialPosition.y, heading: 0 },
+      { x: 2450, y: initialPosition.y, heading: 0 },
       { x: 2850, y: initialPosition.y, heading: 0 },
       { x: 1800, y: 1100, heading: -(Math.PI / 2) },
       { x: 1800, y: 600, heading: -(Math.PI / 2) },
@@ -88,10 +91,14 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       const scanPosition = scanPositions[scanPositionIndex];
       const isAtLastScanPosition = scanPositionIndex === scanPositions.length - 1;
       const isScanPositionInSquareC = isPositionInAreaC(halfArenaHeight, scanPosition);
+      const isRobotInSquareC = isPositionInAreaC(halfArenaHeight, motion.getPose());
 
-      if (isScanPositionInSquareC) {
-        await motion.move2XY(arenaCenterPosition);
+      if (isScanPositionInSquareC && !isRobotInSquareC) {
+        await motion.move2XYPhi(arenaCenterPosition, 0);
         await pause(250);
+
+        await verifyRotation(lidar, motion, 90, 60);
+        await verifyPosition(arena, lidar, motion, 0);
       }
 
       await motion.move2XYPhi(scanPosition, scanPosition.heading);
@@ -108,19 +115,29 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
       sortedLocalisedCans.forEach(({ row, column }) => matrix[row][column] = cellStates.OBSTACLE);
 
-      // TODO visualize cans in telemetry?
+      logger.log(`${localisedCans.length} can(s) found at scan position ${scanPosition.x},${scanPosition.y}`, 'cans');
 
-      // visualize the matrix
-      matrix.forEach(row => console.log(row.toString()));
-      console.log(`${localisedCans.length} can(s) found at scan position ${scanPosition.x},${scanPosition.y}`);
+      if (localisedCans.length) {
+        matrix.forEach(row => console.log(row.toString()));
+      }
 
       for (let obstacleIndex = 0; obstacleIndex < sortedLocalisedCans.length; obstacleIndex += 1) {
         const obstacle = sortedLocalisedCans[obstacleIndex];
-        const isLastObstacle = obstacleIndex === sortedLocalisedCans.length - 1;
+        // const isLastObstacle = obstacleIndex === sortedLocalisedCans.length - 1;
 
-        if (obstacleIndex !== 0 && isPositionInAreaC(halfArenaHeight, obstacle)) {
-          await motion.move2XY(arenaCenterPosition);
+        if (obstacleIndex !== 0) {
+          if (isScanPositionInSquareC) {
+            await motion.move2XYPhi(arenaCenterPosition, 0);
+            await pause(250);
+
+            await verifyRotation(lidar, motion, 90, 60);
+            await verifyPosition(arena, lidar, motion, 0);
+          }
+
+          await motion.move2XYPhi(scanPosition, scanPosition.heading);
           await pause(250);
+
+          // verify rotation and position?
         }
 
         await motion.move2XY(obstacle, -config.GRIPPER_OBSTACLE_DISTANCE);
@@ -138,9 +155,12 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           await motion.distanceHeading(-200, motion.getPose().phi);
           await pause(250);
 
-          if (isPositionInAreaC(halfArenaHeight, motion.getPose())) {
-            await motion.move2XY(arenaCenterPosition);
+          if (isPositionInAreaC(halfArenaHeight, obstacle)) {
+            await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
+
+            await verifyRotation(lidar, motion, 90, 60);
+            await verifyPosition(arena, lidar, motion, 0);
           }
 
           await motion.move2XY(canStoreCoordinates[numStoredCans], -config.GRIPPER_OBSTACLE_DISTANCE);
@@ -149,7 +169,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           await motion.distanceHeading(-150, motion.getPose().phi);
           await pause(250);
 
-          if (!isAtLastScanPosition && !isLastObstacle) {
+          if (!isAtLastScanPosition/* && !isLastObstacle*/) {
             await motion.move2XYPhi(verificationPosition, 0);
             await verifyRotation(lidar, motion, 90, 60);
             await verifyPosition(arena, lidar, motion, 0);
@@ -173,13 +193,11 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
         numStoredCans += 1;
       };
 
-      const areAllCansStored = numStoredCans === maxNumCans;
-      console.log({ areAllCansStored, isAtLastScanPosition });
-
-      if (areAllCansStored || isAtLastScanPosition) {
-        console.log('we should be done...');
+      if (numStoredCans === maxNumCans || isAtLastScanPosition) {
         const currentPose = motion.getPose();
-        const inSquareA = currentPose.x < 450;
+        const inSquareA = currentPose.x < 430;
+
+        console.log('we should be done...', currentPose);
 
         if (!inSquareA) {
           console.log('we\'re not home yet');
@@ -191,6 +209,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           console.log('move to square A');
           await motion.move2XY(endPosition);
         }
+
+        break;
       }
     }
 
