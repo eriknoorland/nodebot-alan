@@ -3,7 +3,7 @@ const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
 const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
 
 const { pause } = robotlib.utils;
-const { calculateDistance } = robotlib.utils.math;
+const { deg2rad, calculateDistance } = robotlib.utils.math;
 
 function findGap(motion, lidarData) {
   let hasCounterStarted = false;
@@ -26,7 +26,7 @@ function findGap(motion, lidarData) {
         const currentPose = motion.getPose();
         const distanceTravelled = calculateDistance(startPose, currentPose);
 
-        if (distanceTravelled >= 105) {
+        if (distanceTravelled >= 118) {
           // console.log('findGap - gap found');
           clearInterval(interval);
           resolve();
@@ -40,6 +40,15 @@ function findGap(motion, lidarData) {
       }
     }, 10);
   });
+}
+
+function findFrontCanAngle(lidarData, referenceAngle) {
+  const reversedLidarData = [...Object.keys(lidarData)].reverse();
+  const frontCanAngle = reversedLidarData.map(angle => parseInt(angle, 10))
+    .filter(angle => angle < referenceAngle && angle > referenceAngle - 60)
+    .find(angle => lidarData[angle] < 1000);
+
+  return frontCanAngle;
 }
 
 const narrowPassage = async (config, lidar, motion) => {
@@ -59,10 +68,21 @@ const narrowPassage = async (config, lidar, motion) => {
   await pause(250);
 
   await findGap(motion, lidarData);
+  await motion.stop();
+  await pause(250);
+
+  const frontCanAngle = findFrontCanAngle(lidarData, 90);
+  const angleDiff = frontCanAngle - 90;
+  const angleDiffRad = deg2rad(angleDiff);
+  const remainingDistance = Math.abs(Math.sin(angleDiffRad) * lidarData[frontCanAngle]);
+  const centerOffsetDistance = -(Math.abs(((240 / 2) - remainingDistance)) * 1.05);
+
+  console.log({ frontCanAngle, centerOffsetDistance });
 
   lidar.off('data', onLidarData);
 
-  await motion.stop();
+  await motion.distanceHeading(centerOffsetDistance, -Math.PI);
+  await pause(250);
 
   await motion.rotate(Math.PI / 2);
   await pause(250);

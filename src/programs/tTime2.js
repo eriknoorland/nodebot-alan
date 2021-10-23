@@ -24,29 +24,26 @@ module.exports = (doNarrowPassage = false) => ({ config, arena, logger, controll
     await solveStartVector(lidar, motion);
     await pause(250);
 
-    const startPositionScanData = await scan(lidar, 2000);
+    const startPositionScanData = await scan(lidar, 1000);
     const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
     await gotoStartPosition(startPositionAveragedMeasurements, motion, -350);
 
-    await verifyRotation(lidar, motion, 90, 60);
+    await verifyRotation(lidar, motion, 270, 60);
     await pause(250);
 
-    const initialPositionScanData = await scan(lidar, 2000);
+    const initialPositionScanData = await scan(lidar, 1000);
     const averagedMeasurements = averageMeasurements(initialPositionScanData);
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
     motion.setTrackPose(true);
     motion.appendPose({ x, y, phi: 0 });
 
-    await motion.rotate(-Math.PI);
-    await pause(250);
-
-    await verifyRotation(lidar, motion, 90, 60);
-    await pause(250);
-
-    // A -> B (in reverse)
-    await motion.speedHeading(-config.MAX_SPEED, Math.PI, isWithinDistance(lidar, 400, 180));
+    // A -> B
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(lidar, 400, 0));
     await motion.stop();
+    await pause(250);
+
+    await motion.rotate(Math.PI);
     await pause(250);
 
     await verifyRotation(lidar, motion, 90, 60);
