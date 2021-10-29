@@ -23,12 +23,12 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
   const halfArenaHeight = arena.height / 2;
   const maxNumCans = 6;
   const canStoreCoordinates = [
-    { x: 100, y: 150 + halfArenaHeight },
-    { x: 100, y: 300 + halfArenaHeight },
-    { x: 250, y: 150 + halfArenaHeight },
-    { x: 250, y: 300 + halfArenaHeight },
-    { x: 400, y: 150 + halfArenaHeight },
-    { x: 400, y: 300 + halfArenaHeight },
+    { x: 100, y: 200 + halfArenaHeight },
+    { x: 100, y: 400 + halfArenaHeight },
+    { x: 250, y: 200 + halfArenaHeight },
+    { x: 250, y: 400 + halfArenaHeight },
+    { x: 400, y: 200 + halfArenaHeight },
+    { x: 400, y: 400 + halfArenaHeight },
   ];
 
   const endPosition = {
