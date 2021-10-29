@@ -31,7 +31,7 @@ const canDetection = (matrix, pose, lidarData, resolution = 50) => {
       };
       const column = Math.floor(obstacle.x / resolution);
       const row = Math.floor(obstacle.y / resolution);
-      const columnOffset = 1;
+      const columnOffset = 2;
 
       const isWithinYLimits = numberInRange(row, columnOffset, matrix.length - (1 + columnOffset));
       const isWithinXLimits = isWithinYLimits && numberInRange(column, columnOffset, matrix[row].length - (1 + columnOffset));
