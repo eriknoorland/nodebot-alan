@@ -6,7 +6,7 @@ const pickupCan = async (config, lidar) => {
   const canAngleScanData = await scan(lidar, 1000);
   const canAngleAveragedMeasurements = averageMeasurements(canAngleScanData);
   const canAngleFilteredAngleMeasurements = filterMeasurements(canAngleAveragedMeasurements, a => a > 330 || a < 30);
-  const canAngleFilteredDistanceMeasurements = filterMeasurements(canAngleFilteredAngleMeasurements, a => canAngleFilteredAngleMeasurements[a] < (config.GRIPPER_OBSTACLE_DISTANCE + 30));
+  const canAngleFilteredDistanceMeasurements = filterMeasurements(canAngleFilteredAngleMeasurements, a => canAngleFilteredAngleMeasurements[a] < (config.GRIPPER_OBSTACLE_DISTANCE + 25));
   const normalizedAngles = Object
     .keys(canAngleFilteredDistanceMeasurements)
     .map(a => ({
