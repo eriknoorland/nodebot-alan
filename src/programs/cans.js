@@ -83,7 +83,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       { x: 2050, y: initialPosition.y, heading: 0 },
       { x: 2450, y: initialPosition.y, heading: 0 },
       { x: 2850, y: initialPosition.y, heading: 0 },
-      { x: 1800, y: 1100, heading: -(Math.PI / 2) },
+      { x: 1800, y: 1200, heading: -(Math.PI / 2) },
       { x: 1800, y: 600, heading: -(Math.PI / 2) },
     ];
 
@@ -99,6 +99,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
         await verifyRotation(lidar, motion, 90, 60);
         await verifyPosition(arena, lidar, motion, 0);
+        await pause(250);
       }
 
       await motion.move2XYPhi(scanPosition, scanPosition.heading);
