@@ -83,7 +83,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       { x: 2050, y: initialPosition.y, heading: 0 },
       { x: 2450, y: initialPosition.y, heading: 0 },
       { x: 2850, y: initialPosition.y, heading: 0 },
-      { x: 1800, y: 1200, heading: -(Math.PI / 2) },
+      { x: 1800, y: 1000, heading: -(Math.PI / 2) },
       { x: 1800, y: 600, heading: -(Math.PI / 2) },
     ];
 
@@ -108,6 +108,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       if (scanPosition.heading === 0) {
         await verifyRotation(lidar, motion, 90, 60);
         await verifyPosition(arena, lidar, motion, 0);
+      } else {
+        await verifyPositioninAreaC(arena, lidar, motion, scanPosition.heading);
       }
 
       const scanPose = motion.getPose();
@@ -124,7 +126,6 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
       for (let obstacleIndex = 0; obstacleIndex < sortedLocalisedCans.length; obstacleIndex += 1) {
         const obstacle = sortedLocalisedCans[obstacleIndex];
-        // const isLastObstacle = obstacleIndex === sortedLocalisedCans.length - 1;
 
         if (obstacleIndex !== 0) {
           if (isScanPositionInSquareC) {
@@ -137,8 +138,6 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
           await motion.move2XYPhi(scanPosition, scanPosition.heading);
           await pause(250);
-
-          // verify rotation and position?
         }
 
         await motion.move2XY(obstacle, -config.GRIPPER_OBSTACLE_DISTANCE);
@@ -170,7 +169,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
           await motion.distanceHeading(-150, motion.getPose().phi);
           await pause(250);
 
-          if (!isAtLastScanPosition/* && !isLastObstacle*/) {
+          if (!isAtLastScanPosition) {
             await motion.move2XYPhi(verificationPosition, 0);
             await verifyRotation(lidar, motion, 90, 60);
             await verifyPosition(arena, lidar, motion, 0);
@@ -216,6 +215,20 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
     }
 
     missionComplete();
+  }
+
+  async function verifyPositioninAreaC(arena, lidar, motion, heading) {
+    const measurements = await scan(lidar, 1000);
+    const averagedMeasurements = averageMeasurements(measurements);
+    const pose = {
+      x: arena.width / 3 + (averagedMeasurements[270] || averagedMeasurements[269] || averagedMeasurements[271]),
+      y: arena.height - averagedMeasurements[180] || averagedMeasurements[179] || averagedMeasurements[181],
+      phi: heading,
+    };
+
+    motion.appendPose(pose);
+
+    return Promise.resolve();
   }
 
   function isPositionInAreaC(halfArenaHeight, position) {
