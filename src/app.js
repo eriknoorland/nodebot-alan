@@ -64,7 +64,9 @@ const defaultProgramOptions = {
   sensors: {},
 };
 
+let isReady = false;
 let currentProgram;
+let telemetryInstance;
 
 app.use(express.static(process.env.TELEMETRY_PUBLIC_FOLDER));
 
@@ -86,21 +88,20 @@ const onSocketConnection = socket => {
 
   socket.on('disconnect', onSocketDisconnect);
   socket.on('start', onStart.bind(null, socket));
-  socket.on('restart', onRestart);
-  socket.on('stop', onStop);
-  socket.on('reboot', onReboot);
-  socket.on('shutdown', onShutdown);
+  // socket.on('restart', onRestart);
+  // socket.on('stop', onStop);
+  // socket.on('reboot', onReboot);
+  // socket.on('shutdown', onShutdown);
   socket.on('emergencyStop', onEmergencyStop);
   socket.on('selected_arena', selectedArena => {
     logger.log(`arena selected - ${selectedArena.name}`, 'app');
     defaultProgramOptions.arena = selectedArena;
   });
 
-  socket.emit('setup', {
-    programs: programs,
-    sensors: ['lidar', 'odometry', 'poses', 'line', 'battery'],
-    name: 'Alan',
-  });
+  if (telemetryInstance && isReady) {
+    telemetryInstance.setup(programs);
+    telemetryInstance.ready();
+  }
 };
 
 const onStart = (socket, programIndex) => {
@@ -117,37 +118,37 @@ const onStart = (socket, programIndex) => {
   currentProgram.start();
 }
 
-const onStop = async () => {
-  logger.log('stop');
+// const onStop = async () => {
+//   logger.log('stop');
 
-  await exitHandler();
+//   await exitHandler();
 
-  shell.exec(`kill -9 ${process.pid}`);
-};
+//   shell.exec(`kill -9 ${process.pid}`);
+// };
 
-const onRestart = async () => {
-  logger.log('restart');
+// const onRestart = async () => {
+//   logger.log('restart');
 
-  await exitHandler();
+//   await exitHandler();
 
-  shell.exec(`kill -9 ${process.pid} && npm start`);
-};
+//   shell.exec(`kill -9 ${process.pid} && npm start`);
+// };
 
-const onReboot = async () => {
-  logger.log('reboot', 'app', 'red');
+// const onReboot = async () => {
+//   logger.log('reboot', 'app', 'red');
 
-  await exitHandler();
+//   await exitHandler();
 
-  shell.exec('sudo reboot');
-};
+//   shell.exec('sudo reboot');
+// };
 
-const onShutdown = async () => {
-  logger.log('shutdown', 'app', 'red');
+// const onShutdown = async () => {
+//   logger.log('shutdown', 'app', 'red');
 
-  await exitHandler();
+//   await exitHandler();
 
-  shell.exec('sudo shutdown -h now');
-};
+//   shell.exec('sudo shutdown -h now');
+// };
 
 const onEmergencyStop = () => {
   logger.log('emergency stop!', 'app', 'red');
@@ -196,7 +197,10 @@ const initUSBDevices = async ({ lidar, gripper, lineSensor, motion }) => {
 const initTelemetry = usbDevices => {
   logger.log('initialize telemetry');
 
-  telemetry(io, config, usbDevices);
+  telemetryInstance = telemetry(io, config, usbDevices);
+  telemetryInstance.setup(programs);
+  telemetryInstance.ready();
+  isReady = true;
 
   return Promise.resolve(usbDevices);
 };

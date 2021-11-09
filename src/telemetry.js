@@ -1,26 +1,15 @@
-const robotlib = require('robotlib');
-
-/**
- * Telemetry
- * @param {Object} config
- * @return {Object}
- */
 module.exports = (socket, config, { lidar, lineSensor, motion }) => {
   let lidarData = {};
   let lineSensorData = [];
   let odometryData = [];
-  // let imu = {};
   let speeds = [];
   let poses = [];
   let lastTimestamp = new Date();
   let fps = {};
 
-  /**
-   * Constructor
-   */
   function constructor() {
     setInterval(setFps, config.LOOP_TIME);
-    setInterval(emit, 100);
+    setInterval(emit, 200);
 
     if (lidar) {
       lidar.on('data', onLidarData);
@@ -28,7 +17,7 @@ module.exports = (socket, config, { lidar, lineSensor, motion }) => {
 
     if (lineSensor) {
       lineSensor.on('data', data => {
-        lineSensorData = data.slice(0);
+        lineSensorData = [...data];
       });
     }
 
@@ -47,15 +36,23 @@ module.exports = (socket, config, { lidar, lineSensor, motion }) => {
     }
   }
 
-  /**
-   * Emit
-   */
+  function setup(programs) {
+    socket.emit('setup', {
+      programs,
+      sensors: ['lidar', 'odometry', 'poses', 'line'],
+      name: 'Alan',
+    });
+  }
+
+  function ready() {
+    socket.emit('ready');
+  }
+
   function emit() {
     socket.emit('data', {
       lidar: lidarData,
       line: lineSensorData,
       odometry: odometryData,
-      // imu,
       speeds,
       poses,
       fps,
@@ -68,21 +65,14 @@ module.exports = (socket, config, { lidar, lineSensor, motion }) => {
     poses.length = 0;
   }
 
-  /**
-   * Lidar data event handler
-   * @param {Object} data
-   */
   function onLidarData({ angle, distance }) {
     if (distance > 0) {
-      const index = robotlib.utils.sensor.lidar.normalizeAngle(Math.round(angle));
+      const index = Math.round(angle) % 360;
 
       lidarData[index] = distance;
     }
   }
 
-  /**
-   * Sets the fps
-   */
   function setFps() {
     const currentTimestamp = new Date();
 
@@ -96,5 +86,8 @@ module.exports = (socket, config, { lidar, lineSensor, motion }) => {
 
   constructor();
 
-  return {};
+  return {
+    setup,
+    ready,
+  };
 };
