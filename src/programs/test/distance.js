@@ -1,4 +1,4 @@
-module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = (distance) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
   const { motion } = controllers;
 
   function constructor() {

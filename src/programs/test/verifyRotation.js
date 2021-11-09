@@ -1,8 +1,6 @@
-const verifyRotation = require('../../helpers/verifyRotation');
-
-module.exports = angle => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = angle => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { verifyRotation } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'testVerifyRotation');
@@ -13,7 +11,7 @@ module.exports = angle => ({ config, arena, logger, controllers, sensors }) => {
 
     motion.setTrackPose(true);
 
-    await verifyRotation(lidar, motion, angle, 90);
+    await verifyRotation(angle, 90);
 
     motion.setTrackPose(false);
 

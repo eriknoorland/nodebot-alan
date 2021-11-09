@@ -1,6 +1,5 @@
-const verifyPosition = require('../../helpers/verifyPosition');
-
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { verifyPosition } = helpers;
   const { motion } = controllers;
   const { lidar } = sensors;
 
@@ -13,7 +12,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
 
     motion.setTrackPose(true);
 
-    await verifyPosition(arena, lidar, motion, 0);
+    await verifyPosition(arena, 0);
 
     motion.setTrackPose(false);
 

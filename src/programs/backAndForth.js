@@ -1,13 +1,6 @@
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
-const solveStartVector = require('../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../utils/motion/gotoStartPosition');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
-
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, utils, helpers, controllers }) => {
+  const { startPosition, isWithinDistance } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'backAndForth');
@@ -16,23 +9,14 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'backAndForth');
 
-    await solveStartVector(lidar, motion);
+    await startPosition(arena.height);
 
-    const startPositionScanData = await scan(lidar, 2000);
-    const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
-    await gotoStartPosition(startPositionAveragedMeasurements, motion);
-
-    const initialPositionScanData = await scan(lidar, 2000);
-    const averagedMeasurements = averageMeasurements(initialPositionScanData);
-    const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
-
-    motion.setTrackPose(true);
-    motion.appendPose({ x, y, phi: 0 });
-
-    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(lidar, 600, 0));
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(600, 0));
     await motion.stop();
+
     await motion.rotate(-Math.PI);
-    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(lidar, 600, 0));
+
+    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(600, 0));
     await motion.stop();
 
     missionComplete();
@@ -41,6 +25,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   function stop() {
     logger.log('stop', 'backAndForth');
     motion.stop(true);
+    motion.setTrackPose(false);
   }
 
   function missionComplete() {

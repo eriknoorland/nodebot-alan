@@ -1,11 +1,7 @@
-const scan = require('../../utils/sensor/lidar/scan');
-const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
-const solveStartVector = require('../../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../../utils/motion/gotoStartPosition');
-
 module.exports = (centerOffset = 0) => ({ config, arena, logger, controllers, sensors }) => {
+  const { averageMeasurements } = utils.sensor.lidar;
+  const { scan, startVector, gotoStartPosition } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'testStartPosition');
@@ -14,11 +10,10 @@ module.exports = (centerOffset = 0) => ({ config, arena, logger, controllers, se
   async function start() {
     logger.log('start', 'testStartPosition');
 
-    await solveStartVector(lidar, motion);
+    await startVector();
 
-    const positionScanData = await scan(lidar, 2000);
-    const positionAveragedMeasurements = averageMeasurements(positionScanData);
-    await gotoStartPosition(positionAveragedMeasurements, motion, centerOffset);
+    const positionMeasurements = averageMeasurements(await scan(2000));
+    await gotoStartPosition(positionMeasurements, centerOffset);
 
     testComplete();
   }

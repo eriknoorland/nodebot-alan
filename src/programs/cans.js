@@ -1,34 +1,20 @@
-const robotlib = require('robotlib');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const solveStartVector = require('../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../utils/motion/gotoStartPosition');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
-const verifyPosition = require('../helpers/verifyPosition');
-const verifyRotation = require('../helpers/verifyRotation');
-const getArenaMatrix = require('../utils/getArenaMatrix');
-const localiseCans = require('../utils/localiseCans');
-const locateCan = require('../utils/locateCan');
-const pickupCan = require('../utils/pickupCan');
-const dropCan = require('../utils/dropCan');
-const cellStates = require('../utils/cellStates');
-
-const { pause } = robotlib.utils;
-const { calculateDistance } = robotlib.utils.math;
-
-module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, controllers, sensors }) => {
+module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { getArenaMatrix, cellStates } = utils;
+  const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
+  const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan } = helpers;
   const { motion, gripper } = controllers;
-  const { lidar } = sensors;
+  const { pause } = utils.robotlib;
+  const { calculateDistance } = utils.robotlib.math;
   const matrix = getArenaMatrix(arena.width, arena.height, 30);
   const halfArenaHeight = arena.height / 2;
   const maxNumCans = 6;
   const canStoreCoordinates = [
     { x: 100, y: 200 + halfArenaHeight },
-    { x: 100, y: 400 + halfArenaHeight },
+    { x: 100, y: 300 + halfArenaHeight },
     { x: 250, y: 200 + halfArenaHeight },
-    { x: 250, y: 400 + halfArenaHeight },
+    { x: 250, y: 300 + halfArenaHeight },
     { x: 400, y: 200 + halfArenaHeight },
-    { x: 400, y: 400 + halfArenaHeight },
+    { x: 400, y: 300 + halfArenaHeight },
   ];
 
   const endPosition = {
@@ -50,20 +36,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
   async function start() {
     logger.log('start', 'cans');
 
-    await solveStartVector(lidar, motion);
-
-    const positionScanData = await scan(lidar, 1000);
-    const positionAveragedMeasurements = averageMeasurements(positionScanData);
-    await gotoStartPosition(positionAveragedMeasurements, motion);
-
-    const currentPositionScanData = await scan(lidar, 1000);
-    const currentPositionAveragedMeasurements = averageMeasurements(currentPositionScanData);
-    const initialPosition = getInitialPosition(currentPositionAveragedMeasurements, arena.height);
-
-    motion.setTrackPose(true);
-    motion.appendPose({ ...initialPosition, phi: 0 });
-
-    const startPosition = { ...initialPosition };
+    const initialPose = await startPosition(arena.height);
+    const startPosition = { ...initialPose };
 
     if (startPosition.x < 450) {
       startPosition.x = 450;
@@ -97,8 +71,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
         await motion.move2XYPhi(arenaCenterPosition, 0);
         await pause(250);
 
-        await verifyRotation(lidar, motion, 90, 60);
-        await verifyPosition(arena, lidar, motion, 0);
+        await verifyRotation(90, 60);
+        await verifyPosition(arena, 0);
         await pause(250);
       }
 
@@ -106,14 +80,14 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       await pause(250);
 
       if (scanPosition.heading === 0) {
-        await verifyRotation(lidar, motion, 90, 60);
-        await verifyPosition(arena, lidar, motion, 0);
+        await verifyRotation(90, 60);
+        await verifyPosition(arena, 0);
       } else {
-        await verifyPositioninAreaC(arena, lidar, motion, scanPosition.heading);
+        await verifyPositioninAreaC(arena, motion, scanPosition.heading);
       }
 
       const scanPose = motion.getPose();
-      const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar, 30);
+      const localisedCans = await localiseCans(scanRadius, matrix, scanPose, 30);
       const sortedLocalisedCans = [...localisedCans].sort((a, b) => calculateDistance(scanPose, a) - calculateDistance(scanPose, b));
 
       sortedLocalisedCans.forEach(({ row, column }) => matrix[row][column] = cellStates.OBSTACLE);
@@ -132,8 +106,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
 
-            await verifyRotation(lidar, motion, 90, 60);
-            await verifyPosition(arena, lidar, motion, 0);
+            await verifyRotation(90, 60);
+            await verifyPosition(arena, 0);
           }
 
           await motion.move2XYPhi(scanPosition, scanPosition.heading);
@@ -145,7 +119,8 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
         if (pickupAndReturn) {
           try {
-            await pickupCan(config, lidar, motion, gripper);
+            const canCenter = await locateCan(config);
+            await pickupCan(config, canCenter);
           } catch(error) {
             console.log(error);
             matrix[obstacle.row][obstacle.column] = cellStates.EMPTY;
@@ -159,25 +134,25 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
 
-            await verifyRotation(lidar, motion, 90, 60);
-            await verifyPosition(arena, lidar, motion, 0);
+            await verifyRotation(90, 60);
+            await verifyPosition(arena, 0);
           }
 
           await motion.move2XY(canStoreCoordinates[numStoredCans], -config.GRIPPER_OBSTACLE_DISTANCE);
-          await dropCan(config, gripper);
+          await dropCan(config);
 
           await motion.distanceHeading(-150, motion.getPose().phi);
           await pause(250);
 
           if (!isAtLastScanPosition) {
             await motion.move2XYPhi(verificationPosition, 0);
-            await verifyRotation(lidar, motion, 90, 60);
-            await verifyPosition(arena, lidar, motion, 0);
+            await verifyRotation(90, 60);
+            await verifyPosition(arena, 0);
             await pause(250);
           }
         } else {
           try {
-            await locateCan(config, lidar);
+            await locateCan(config);
           } catch(error) {
             console.log(error);
             matrix[obstacle.row][obstacle.column] = cellStates.EMPTY;
@@ -197,16 +172,11 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
         const currentPose = motion.getPose();
         const inSquareA = currentPose.x < 430;
 
-        console.log('we should be done...', currentPose);
-
         if (!inSquareA) {
-          console.log('we\'re not home yet');
           if (isPositionInAreaC(halfArenaHeight, currentPose)) {
-            console.log('move to center square');
             await motion.move2XY(arenaCenterPosition);
           }
 
-          console.log('move to square A');
           await motion.move2XY(endPosition);
         }
 
@@ -217,12 +187,19 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
     missionComplete();
   }
 
-  async function verifyPositioninAreaC(arena, lidar, motion, heading) {
-    const measurements = await scan(lidar, 1000);
-    const averagedMeasurements = averageMeasurements(measurements);
+  async function localiseCans(scanRadius, matrix, pose, resolution) {
+    const measurements = averageMeasurements(await scan(1000));
+    const angleFilteredMeasurements = filterMeasurements(measurements, a => a >= 270 || a <= 90);
+    const distanceFilteredMeasurements = filterMeasurements(angleFilteredMeasurements, a => angleFilteredMeasurements[a] < scanRadius);
+
+    return obstacleDetection(matrix, pose, distanceFilteredMeasurements, resolution);
+  }
+
+  async function verifyPositioninAreaC(arena, motion, heading) {
+    const measurements = averageMeasurements(await scan(1000));
     const pose = {
-      x: arena.width / 3 + (averagedMeasurements[270] || averagedMeasurements[269] || averagedMeasurements[271]),
-      y: arena.height - averagedMeasurements[180] || averagedMeasurements[179] || averagedMeasurements[181],
+      x: arena.width / 3 + (measurements[270] || measurements[269] || measurements[271]),
+      y: arena.height - measurements[180] || measurements[179] || measurements[181],
       phi: heading,
     };
 

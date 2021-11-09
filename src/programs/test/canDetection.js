@@ -1,12 +1,7 @@
-const getArenaMatrix = require('../../utils/getArenaMatrix');
-const localiseCans = require('../../utils/localiseCans');
-const verifyPosition = require('../../helpers/verifyPosition');
-const verifyRotation = require('../../helpers/verifyRotation');
-const cellStates = require('../../utils/cellStates');
-
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { getArenaMatrix, cellStates } = utils;
+  const { verifyRotation, verifyPosition, localiseCans } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'testCanDetection');
@@ -22,11 +17,11 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     const scanRadius = 900;
     const matrix = getArenaMatrix(arena.width, arena.height, matrixResolution);
 
-    await verifyRotation(lidar, motion, 90, 60);
-    await verifyPosition(arena, lidar, motion, 0);
+    await verifyRotation(90, 60);
+    await verifyPosition(arena, 0);
 
     const scanPose = motion.getPose();
-    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar, matrixResolution);
+    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, matrixResolution);
 
     // mark matrix
     const pose = motion.getPose();

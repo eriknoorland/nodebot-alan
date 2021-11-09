@@ -1,4 +1,4 @@
-module.exports = (numRotations = 1) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = (numRotations = 1) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
   const { motion } = controllers;
 
   function constructor() {

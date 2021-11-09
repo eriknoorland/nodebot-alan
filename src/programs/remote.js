@@ -1,10 +1,7 @@
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
-
-module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
+module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors, socket }) => {
+  const { averageMeasurements } = utils;
+  const { scan, getInitialPosition } = helpers;
   const { motion, gripper } = controllers;
-  const { lidar } = sensors;
 
   let currentPose = {};
 
@@ -15,8 +12,7 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   async function start() {
     logger.log('start', 'remote');
 
-    const scanData = await scan(lidar, 1000);
-    const averagedMeasurements = averageMeasurements(scanData);
+    const averagedMeasurements = averageMeasurements(await scan(1000));
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
     motion.on('pose', onPose);

@@ -1,18 +1,6 @@
-const robotlib = require('robotlib');
-const locateCan = require('./locateCan');
-
-const { pause } = robotlib.utils;
-const { deg2rad } = robotlib.utils.math;
-
-const pickupCan = async (config, lidar, motion, gripper) => {
-  let canCenter;
-
-  try {
-    canCenter = await locateCan(config, lidar);
-  } catch(error) {
-    return Promise.reject();
-  }
-
+const pickupCan = (utils, helpers, motion, gripper) => async (config, canCenter) => {
+  const { pause } = utils.robotlib;
+  const { deg2rad } = utils.robotlib.math;
   const rotationAngle = canCenter.angle;
   const canDistance = canCenter.distance;
   const lidarAngleOffset = -1;

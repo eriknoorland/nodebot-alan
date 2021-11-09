@@ -1,7 +1,5 @@
-const robotlib = require('robotlib');
-const { pause } = robotlib.utils;
-
-module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { pause } = utils.robotlib;
   const { motion } = controllers;
 
   function constructor() {

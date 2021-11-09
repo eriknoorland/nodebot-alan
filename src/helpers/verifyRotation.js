@@ -1,16 +1,12 @@
-const robotlib = require('robotlib');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const filterMeasurements = require('../utils/sensor/lidar/filterMeasurements');
+const verifyRotation = (utils, helpers, motion) => async (angle, openingAngle) => {
+  const { deg2rad } = utils.robotlib.math;
+  const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
+  const { scan } = helpers;
 
-const { deg2rad } = robotlib.utils.math;
-
-const verifyRotation = async (lidar, motion, angle, openingAngle) => {
   const minAngle = angle - (openingAngle / 2);
   const maxAngle = angle + (openingAngle / 2);
-  const measurements = await scan(lidar, 1000);
-  const averagedMeasurements = averageMeasurements(measurements);
-  const filteredMeasurements = filterMeasurements(averagedMeasurements, a => a >= minAngle && a <= maxAngle);
+  const measurements = averageMeasurements(await scan(1000));
+  const filteredMeasurements = filterMeasurements(measurements, a => a >= minAngle && a <= maxAngle);
   const points = [];
 
   Object

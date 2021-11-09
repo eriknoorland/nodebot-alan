@@ -7,12 +7,34 @@ const socketio = require('socket.io');
 const robotlib = require('robotlib');
 
 const config = require('./config');
+const utils = require('./utils');
 const programs = require('./programs');
 const telemetry = require('./telemetry');
+
+// usb devices
 const initLidar = require('./initLidar');
 const initGripper = require('./initGripper');
 const initLineSensor = require('./initLineSensor');
 const initMotionController = require('./initMotionController');
+
+// helpers
+const makeScan = require('./helpers/scan');
+const makeStartVector = require('./helpers/startVector');
+const makeGotoStartPosition = require('./helpers/gotoStartPosition');
+const makeGetInitialPosition = require('./helpers/getInitialPosition');
+const makeIsWithinDistance = require('./helpers/isWithinDistance');
+const makeVerifyRotation = require('./helpers/verifyRotation');
+const makeVerifyPosition = require('./helpers/verifyPosition');
+const makeNarrowPassage = require('./helpers/narrowPassage');
+const makeLocateCan = require('./helpers/locateCan');
+const makePickupCan = require('./helpers/pickupCan');
+const makeDropCan = require('./helpers/dropCan');
+const makeStartPosition = require('./helpers/startPosition');
+
+const utilities = {
+  robotlib: robotlib.utils,
+  ...utils,
+};
 
 const socketOptions = {
   allowEIO3: true,
@@ -36,6 +58,8 @@ const defaultProgramOptions = {
   io,
   config,
   logger,
+  utils: utilities,
+  helpers: {},
   controllers: {},
   sensors: {},
 };
@@ -177,13 +201,41 @@ const initTelemetry = usbDevices => {
   return Promise.resolve(usbDevices);
 };
 
-const updateProgramOptions = usbDevices => {
+const updateProgramOptions = ({ motion, gripper, lidar, lineSensor }) => {
   logger.log('update state options');
 
-  defaultProgramOptions.controllers.motion = usbDevices.motion;
-  defaultProgramOptions.controllers.gripper = usbDevices.gripper;
-  defaultProgramOptions.sensors.lidar = usbDevices.lidar;
-  defaultProgramOptions.sensors.line = usbDevices.lineSensor;
+  defaultProgramOptions.controllers.motion = motion;
+  defaultProgramOptions.controllers.gripper = gripper;
+  defaultProgramOptions.sensors.lidar = lidar;
+  defaultProgramOptions.sensors.line = lineSensor;
+
+  const scan = makeScan(utilities, lidar);
+  const locateCan = makeLocateCan(utilities, { scan });
+  const verifyRotation = makeVerifyRotation(utilities, { scan }, motion);
+  const verifyPosition = makeVerifyPosition(utilities, { scan }, lidar, motion);
+  const pickupCan = makePickupCan(utilities, {}, motion, gripper);
+  const dropCan = makeDropCan(utilities, {}, gripper);
+  const startVector = makeStartVector(utilities, { scan, verifyRotation }, motion);
+  const gotoStartPosition = makeGotoStartPosition(utilities, {}, motion);
+  const getInitialPosition = makeGetInitialPosition(utilities, {});
+  const isWithinDistance = makeIsWithinDistance(utilities, {}, lidar);
+  const narrowPassage = makeNarrowPassage(utilities, { isWithinDistance }, lidar, motion);
+  const startPosition = makeStartPosition(utilities, { scan, startVector, gotoStartPosition, getInitialPosition }, motion);
+
+  defaultProgramOptions.helpers = {
+    scan,
+    locateCan,
+    verifyRotation,
+    verifyPosition,
+    pickupCan,
+    dropCan,
+    startVector,
+    gotoStartPosition,
+    getInitialPosition,
+    startPosition,
+    isWithinDistance,
+    narrowPassage,
+  };
 
   return Promise.resolve();
 };

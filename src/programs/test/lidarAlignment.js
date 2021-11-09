@@ -1,13 +1,8 @@
-const robotlib = require('robotlib');
-const scan = require('../../utils/sensor/lidar/scan');
-const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
-const filterMeasurements = require('../../utils/sensor/lidar/filterMeasurements');
-
-const { deg2rad, rad2deg } = robotlib.utils.math;
-
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
+module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+  const { deg2rad, rad2deg } = utils.robotlib.math;
+  const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
+  const { scan } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
 
   function constructor() {
     logger.log('constructor', 'testLidarAlignment');
@@ -16,9 +11,8 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   async function start() {
     logger.log('start', 'testLidarAlignment');
 
-    const scanData = await scan(lidar, 2000);
-    const averagedMeasurements = averageMeasurements(scanData);
-    const filteredMeasurements = filterMeasurements(averagedMeasurements, a => a >= 45 && a <= 135);
+    const measurements = averageMeasurements(await scan(2000));
+    const filteredMeasurements = filterMeasurements(measurements, a => a >= 45 && a <= 135);
 
     const points = Object
       .keys(filteredMeasurements)
@@ -28,7 +22,6 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
         const x = Math.cos(angleRad) * distance;
         const y = Math.sin(angleRad) * distance;
 
-        // console.log({ angle, /*distance, */posX, posY });
         return { angle, distance, x, y };
       });
 

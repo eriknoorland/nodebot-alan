@@ -1,13 +1,8 @@
-const robotlib = require('robotlib');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const filterMeasurements = require('../utils/sensor/lidar/filterMeasurements');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
 const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
 const getShortestDistance = require('../utils/sensor/lidar/getShortestDistance');
 const scanObject2Array = require('../utils/sensor/lidar/scanObject2Array');
 
-module.exports = (withObstacle = false) => ({ config, arena, logger, controllers, sensors }) => {
+module.exports = (withObstacle = false) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
   const STATE_IDLE = 'idle';
   const STATE_CALIBRATION = 'calibration';
   const STATE_LINE_FOLLOWING = 'lineFollowing';
@@ -16,8 +11,13 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
   const STATE_ROTATE_TO_LINE = 'rotateToLine';
   const STATE_DONE = 'done';
 
+  const { robotlib, averageMeasurements, filterMeasurements } = utils;
+  const { scan, getInitialPosition } = helpers;
   const { motion } = controllers;
   const { lidar, line: lineSensor } = sensors;
+  const { constrain } = robotlib.utils;
+  const { deg2rad } = robotlib.utils.math;
+
   const calibrationData = [];
   const maxSpeed = 300;
   const speed = maxSpeed - 100;
@@ -64,8 +64,7 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
 
   async function calibrate() {
     const rotationOffset = 20;
-    const startPositionMeasurements = await scan(lidar, 1000);
-    const startPositionAveragedMeasurements = averageMeasurements(startPositionMeasurements);
+    const startPositionAveragedMeasurements = averageMeasurements(await scan(1000));
     const { x, y } = getInitialPosition(startPositionAveragedMeasurements, arena.height);
 
     state = STATE_CALIBRATION;
@@ -73,9 +72,9 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
     motion.setTrackPose(true);
     motion.appendPose({ x, y, phi: 0 });
 
-    await motion.rotate(robotlib.utils.math.deg2rad(-rotationOffset));
-    await motion.rotate(robotlib.utils.math.deg2rad(rotationOffset * 2));
-    await motion.rotate(robotlib.utils.math.deg2rad(-rotationOffset));
+    await motion.rotate(deg2rad(-rotationOffset));
+    await motion.rotate(deg2rad(rotationOffset * 2));
+    await motion.rotate(deg2rad(-rotationOffset));
 
     minValue = Math.min(...calibrationData);
     maxValue = Math.max(...calibrationData);
@@ -102,8 +101,8 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
     const maxValue = Math.max(...data.filter(value => value > meanValue));
     const index = data.indexOf(maxValue);
     const error = index !== -1 ? index - 3.5 : lastError;
-    const leftSpeed = robotlib.utils.constrain(Math.round(speed + (error * Kp)), 0, maxSpeed);
-    const rightSpeed = robotlib.utils.constrain(Math.round(speed - (error * Kp)), 0, maxSpeed);
+    const leftSpeed = constrain(Math.round(speed + (error * Kp)), 0, maxSpeed);
+    const rightSpeed = constrain(Math.round(speed - (error * Kp)), 0, maxSpeed);
 
     motion.speedLeftRight(leftSpeed, rightSpeed);
     numTimesBelowThreshold = 0;
@@ -117,8 +116,7 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
       isObstacleAvoiding = true;
 
       const rotationDirection = passObstancleOnLeftSide ? -1 : 1;
-      const canDistanceMeasurements = await scan(lidar, 1000);
-      const averagedCanDistanceMeasurements = averageMeasurements(canDistanceMeasurements);
+      const averagedCanDistanceMeasurements = averageMeasurements(await scan(1000));
       const filteredCanDistanceMeasurements = filterMeasurements(averagedCanDistanceMeasurements, a => a > 300 || a < 60);
       let canAngle = getShortestDistance(scanObject2Array(filteredCanDistanceMeasurements)).angle;
 
@@ -127,7 +125,7 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, controllers
       }
 
       const rotationAngle = 45 + canAngle;
-      const rotationAngleRad = robotlib.utils.math.deg2rad(rotationAngle);
+      const rotationAngleRad = deg2rad(rotationAngle);
 
       await motion.rotate(rotationAngleRad * rotationDirection);
 

@@ -1,7 +1,7 @@
 const backAndForth = require('./backAndForth');
-const superSlalom = require('./superSlalom2');
+const superSlalom = require('./superSlalom');
 const lineFollower = require('./lineFollower');
-const tTime = require('./tTime2');
+const tTime = require('./tTime');
 const cans = require('./cans');
 
 const testRemote = require('./remote');
@@ -14,7 +14,6 @@ const testLidarAlignment = require('./test/lidarAlignment');
 const testUMBMark = require('./test/umbMark');
 const testStartVector = require('./test/startVector');
 const testStartPosition = require('./test/startPosition');
-const testNarrowPassage = require('./test/narrowPassage');
 const testVerifyRotation = require('./test/verifyRotation');
 const testVerifyPosition = require('./test/verifyPosition');
 const testPickupCan = require('./test/pickupCan');
@@ -60,7 +59,6 @@ const testPrograms = [
   { name: '[Test] Start position', module: testStartPosition() },
   { name: '[Test] Start position - 300', module: testStartPosition(-300) },
   { name: '[Test] Start position + 300', module: testStartPosition(300) },
-  { name: '[Test] Smalle doorgang', module: testNarrowPassage },
   { name: '[Test] Verifieër rotatie rechts', module: testVerifyRotation(90) },
   { name: '[Test] Verifieër rotatie links', module: testVerifyRotation(270) },
   { name: '[Test] Verifieër positie', module: testVerifyPosition },
@@ -71,7 +69,6 @@ const testPrograms = [
 
 module.exports = [
   { name: 'Heen & Weer', module: backAndForth },
-  // { name: 'Slalom', module: slalom },
   { name: 'Super Slalom', module: superSlalom },
   { name: 'Lijnvolgen', module: lineFollower() },
   { name: 'Lijnvolgen met Obstakel', module: lineFollower(true) },
