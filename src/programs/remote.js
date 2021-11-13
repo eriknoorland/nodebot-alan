@@ -1,5 +1,5 @@
 module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors, socket }) => {
-  const { averageMeasurements } = utils;
+  const { averageMeasurements } = utils.sensor.lidar;
   const { scan, getInitialPosition } = helpers;
   const { motion, gripper } = controllers;
 

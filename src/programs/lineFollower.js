@@ -11,12 +11,12 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, utils, help
   const STATE_ROTATE_TO_LINE = 'rotateToLine';
   const STATE_DONE = 'done';
 
-  const { robotlib, averageMeasurements, filterMeasurements } = utils;
+  const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
   const { scan, getInitialPosition } = helpers;
   const { motion } = controllers;
   const { lidar, line: lineSensor } = sensors;
-  const { constrain } = robotlib.utils;
-  const { deg2rad } = robotlib.utils.math;
+  const { constrain } = utils.robotlib;
+  const { deg2rad } = utils.robotlib.math;
 
   const calibrationData = [];
   const maxSpeed = 300;
