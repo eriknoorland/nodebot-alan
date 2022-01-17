@@ -1,17 +1,14 @@
-module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors, socket }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers, socket) => {
+  const eventEmitter = new EventEmitter();
   const { averageMeasurements } = utils.sensor.lidar;
   const { scan, getInitialPosition } = helpers;
-  const { motion, gripper } = controllers;
+  const { motion, gripper } = actuators;
 
   let currentPose = {};
 
-  function constructor() {
-    logger.log('constructor', 'remote');
-  }
-
   async function start() {
-    logger.log('start', 'remote');
-
     const averagedMeasurements = averageMeasurements(await scan(1000));
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
@@ -35,8 +32,6 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors,
   }
 
   function stop() {
-    logger.log('stop', 'remote');
-
     motion.off('pose', onPose);
 
     socket.removeListener('ArrowUp', forward);
@@ -52,6 +47,8 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors,
     socket.removeListener('KeyP', onGripperClose);
 
     socket.removeListener('waypoints', waypoints);
+
+    motion.setTrackPose(false);
   }
 
   function forward() {
@@ -109,6 +106,7 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors,
   constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

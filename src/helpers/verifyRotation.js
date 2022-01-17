@@ -1,4 +1,4 @@
-const verifyRotation = (utils, helpers, motion) => async (angle, openingAngle) => {
+const verifyRotation = (logger, utils, helpers, motion) => async (angle, openingAngle) => {
   const { deg2rad } = utils.robotlib.math;
   const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
   const { scan } = helpers;

@@ -1,4 +1,4 @@
-module.exports = (utils, helpers, motion) => async (arenaHeight, centerOffset = 0) => {
+module.exports = (logger, utils, helpers, motion) => async (arenaHeight, centerOffset = 0) => {
   const { pause } = utils.robotlib;
   const { averageMeasurements } = utils.sensor.lidar;
   const { scan, startVector, gotoStartPosition, getInitialPosition, verifyRotation } = helpers;

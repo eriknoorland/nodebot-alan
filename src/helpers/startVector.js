@@ -1,4 +1,4 @@
-module.exports = (utils, helpers, motion) => async () => {
+module.exports = (logger, utils, helpers, motion) => async () => {
   const { averageMeasurements, getAngleDistance, getLongestDistance, scanObject2Array } = utils.sensor.lidar;
   const { scan, verifyRotation } = helpers;
   const { pause } = utils.robotlib;

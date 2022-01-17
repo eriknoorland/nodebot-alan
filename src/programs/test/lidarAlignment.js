@@ -1,12 +1,11 @@
-module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { deg2rad, rad2deg } = utils.robotlib.math;
   const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
   const { scan } = helpers;
   const { motion } = controllers;
-
-  function constructor() {
-    logger.log('constructor', 'testLidarAlignment');
-  }
 
   async function start() {
     logger.log('start', 'testLidarAlignment');
@@ -33,22 +32,15 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
 
     console.log({ o, s, sin }, rad2deg(sin));
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testLidarAlignment');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testLidarAlignment');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

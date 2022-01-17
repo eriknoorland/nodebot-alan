@@ -4,15 +4,16 @@ const MotionController = require('nodebot-motion-controller');
  * Initialize motion controller
  * @param {String} portName
  * @param {Object} config
+ * @param {Object} options
  * @return {Object}
  */
-const initMotionController = (portName, config) => new Promise((resolve, reject) => {
+const initMotionController = (portName, config, options = {}) => new Promise((resolve, reject) => {
   if (!portName) {
     reject('motion controller not found');
     return;
   }
 
-  const motion = MotionController(portName, config);
+  const motion = MotionController(portName, config, options);
   const errorTimeout = setTimeout(() => {
     reject('motion controller timed out');
   }, 5000);

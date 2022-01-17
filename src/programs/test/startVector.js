@@ -1,32 +1,22 @@
-module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { startVector } = helpers;
   const { motion } = controllers;
 
-  function constructor() {
-    logger.log('constructor', 'startVector');
-  }
-
   async function start() {
-    logger.log('start', 'startVector');
-
     await startVector();
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'startVector');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'startVector');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

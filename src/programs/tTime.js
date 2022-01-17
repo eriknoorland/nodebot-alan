@@ -1,15 +1,12 @@
-module.exports = (doNarrowPassage = false) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { pause } = utils.robotlib;
   const { startPosition, isWithinDistance, verifyRotation, narrowPassage } = helpers;
-  const { motion } = controllers;
-
-  function constructor() {
-    logger.log('constructor', 'tTime');
-  }
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'tTime');
-
     await startPosition(arena.height, -350);
 
     // A -> B
@@ -30,22 +27,16 @@ module.exports = (doNarrowPassage = false) => ({ config, arena, logger, utils, h
     await motion.speedHeading(config.MAX_SPEED, Math.PI, isWithinDistance(400, 0));
     await motion.stop();
 
-    missionComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'tTime');
     motion.stop(true);
+    motion.setTrackPose(false);
   }
-
-  function missionComplete() {
-    logger.log('mission complete', 'tTime');
-    stop();
-  }
-
-  constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

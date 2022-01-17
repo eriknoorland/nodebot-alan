@@ -5,7 +5,7 @@
  * @param {Object} acc
  * @return {Promise}
  */
-const scan = (utils, lidar) => (duration, offset = 0, acc = {}) => new Promise(resolve => {
+const scan = (logger, utils, lidar) => (duration, offset = 0, acc = {}) => new Promise(resolve => {
   const { normalizeAngle } = utils.sensor.lidar;
 
   const onLidarData = ({ angle, distance }) => {

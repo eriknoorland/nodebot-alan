@@ -1,8 +1,11 @@
-module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { getArenaMatrix, cellStates } = utils;
   const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
   const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan } = helpers;
-  const { motion, gripper } = controllers;
+  const { motion, gripper } = actuators;
   const { pause } = utils.robotlib;
   const { calculateDistance } = utils.robotlib.math;
   const matrix = getArenaMatrix(arena.width, arena.height, 30);
@@ -29,13 +32,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
   let numStoredCans = 0;
 
-  function constructor() {
-    logger.log('constructor', 'cans');
-  }
-
   async function start() {
-    logger.log('start', 'cans');
-
     const initialPose = await startPosition(arena.height);
     const startPosition = { ...initialPose };
 
@@ -92,7 +89,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
 
       sortedLocalisedCans.forEach(({ row, column }) => matrix[row][column] = cellStates.OBSTACLE);
 
-      logger.log(`${localisedCans.length} can(s) found at scan position ${scanPosition.x},${scanPosition.y}`, 'cans');
+      logger.event(`${localisedCans.length} can(s) found at scan position ${scanPosition.x},${scanPosition.y}`);
 
       if (localisedCans.length) {
         matrix.forEach(row => console.log(row.toString()));
@@ -184,7 +181,7 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
       }
     }
 
-    missionComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   async function localiseCans(scanRadius, matrix, pose, resolution) {
@@ -213,18 +210,12 @@ module.exports = (pickupAndReturn = false) => ({ socket, config, arena, logger, 
   }
 
   function stop() {
-    logger.log('stop', 'cans');
     motion.stop(true);
+    motion.setTrackPose(false);
   }
-
-  function missionComplete() {
-    logger.log('mission complete', 'cans');
-    stop();
-  }
-
-  constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

@@ -1,4 +1,4 @@
-const gotoStartPosition = (utils, helpers, motion) => async (measurements, centerOffset = 0) => {
+const gotoStartPosition = (logger, utils, helpers, motion) => async (measurements, centerOffset = 0) => {
   const { pause } = utils.robotlib;
   const { getAngleDistance } = utils.sensor.lidar;
 

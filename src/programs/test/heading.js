@@ -1,17 +1,13 @@
-module.exports = (distance) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = (distance) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { pause } = utils.robotlib;
   const { averageMeasurements, getAngleDistance } = utils.sensor.lidar;
   const { scan, startVector, gotoStartPosition, getInitialPosition } = helpers;
   const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testHeading');
-  }
 
   async function start() {
-    logger.log('start', 'testHeading');
-
     await startVector();
     await pause(250);
 
@@ -45,22 +41,15 @@ module.exports = (distance) => ({ config, arena, logger, utils, helpers, control
       poseDiffY,
     });
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testHeading');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testHeading');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

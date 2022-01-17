@@ -1,4 +1,4 @@
-const narrowPassage = (utils, helpers, lidar, motion) => {
+const narrowPassage = (logger, utils, helpers, lidar, motion) => {
   const { pause } = utils.robotlib;
   const { deg2rad, calculateDistance } = utils.robotlib.math;
   const { getAngleDistance } = utils.sensor.lidar;

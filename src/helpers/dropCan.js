@@ -1,4 +1,4 @@
-const dropCan = (utils, helpers, gripper) => async (config) => {
+const dropCan = (logger, utils, helpers, gripper) => async (config) => {
   const { pause } = utils.robotlib;
 
   await pause(250);

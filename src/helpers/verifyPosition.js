@@ -1,4 +1,4 @@
-const verifyPosition = (utils, helpers, lidar, motion) => async (arena, heading) => {
+const verifyPosition = (logger, utils, helpers, lidar, motion) => async (arena, heading) => {
   const { averageMeasurements } = utils.sensor.lidar;
   const { scan }  = helpers;
   const averagedMeasurements = averageMeasurements(await scan(lidar, 1000));

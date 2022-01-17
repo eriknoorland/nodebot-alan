@@ -1,8 +1,11 @@
-module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { getAngleDistance } = utils.sensor.lidar;
   const { rad2deg, deg2rad, calculateDistance } = utils.robotlib.math;
   const { startPosition, isWithinDistance, verifyRotation } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
   const { lidar } = sensors;
   const { pause } = robotlib.utils;
   const startOffset = 250;
@@ -12,13 +15,10 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
   let side = 'left';
 
   function constructor() {
-    logger.log('constructor', 'superSlalom');
     lidar.on('data', onLidarData);
   }
 
   async function start() {
-    logger.log('start', 'superSlalom');
-
     await startPosition(arena.height, startOffset);
 
     await findGap();
@@ -49,7 +49,7 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
     await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(400, 0));
     await motion.stop();
 
-    missionComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function findGap() {
@@ -156,14 +156,10 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
   }
 
   function stop() {
-    logger.log('stop', 'superSlalom');
     motion.stop(true);
-    lidar.off('data', onLidarData);
-  }
+    motion.setTrackPose(false);
 
-  function missionComplete() {
-    logger.log('mission complete', 'superSlalom');
-    stop();
+    lidar.off('data', onLidarData);
   }
 
   function onLidarData({ angle, distance }) {
@@ -177,6 +173,7 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
   constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

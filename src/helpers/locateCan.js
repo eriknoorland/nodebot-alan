@@ -1,4 +1,4 @@
-const pickupCan = (utils, helpers) => async (config) => {
+const pickupCan = (logger, utils, helpers) => async (config) => {
   const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
   const { scan } = helpers;
   const canAngleAveragedMeasurements = averageMeasurements(await scan(1000));

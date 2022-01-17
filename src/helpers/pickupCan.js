@@ -1,4 +1,4 @@
-const pickupCan = (utils, helpers, motion, gripper) => async (config, canCenter) => {
+const pickupCan = (logger, utils, helpers, motion, gripper) => async (config, canCenter) => {
   const { pause } = utils.robotlib;
   const { deg2rad } = utils.robotlib.math;
   const rotationAngle = canCenter.angle;

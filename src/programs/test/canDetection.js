@@ -1,15 +1,12 @@
-module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { getArenaMatrix, cellStates } = utils;
   const { verifyRotation, verifyPosition, localiseCans } = helpers;
   const { motion } = controllers;
 
-  function constructor() {
-    logger.log('constructor', 'testCanDetection');
-  }
-
   async function start() {
-    logger.log('start', 'testCanDetection');
-
     const matrixResolution = 30;
 
     motion.setTrackPose(true);
@@ -34,22 +31,15 @@ module.exports = ({ config, arena, logger, utils, helpers, controllers, sensors 
     // visualize
     matrix.forEach(row => console.log(row.toString()));
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testCanDetection');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testCanDetection');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

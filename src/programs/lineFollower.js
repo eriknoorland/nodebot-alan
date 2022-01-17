@@ -1,8 +1,7 @@
-const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
-const getShortestDistance = require('../utils/sensor/lidar/getShortestDistance');
-const scanObject2Array = require('../utils/sensor/lidar/scanObject2Array');
+const EventEmitter = require('events');
 
-module.exports = (withObstacle = false) => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const STATE_IDLE = 'idle';
   const STATE_CALIBRATION = 'calibration';
   const STATE_LINE_FOLLOWING = 'lineFollowing';
@@ -13,10 +12,11 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, utils, help
 
   const { averageMeasurements, filterMeasurements } = utils.sensor.lidar;
   const { scan, getInitialPosition } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
   const { lidar, line: lineSensor } = sensors;
   const { constrain } = utils.robotlib;
   const { deg2rad } = utils.robotlib.math;
+  const { getAngleDistance, getShortestDistance, scanObject2Array } = utils.sensor.lidar;
 
   const calibrationData = [];
   const maxSpeed = 300;
@@ -35,13 +35,7 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, utils, help
   let maxValue;
   let meanValue;
 
-  function constructor() {
-    logger.log('constructor', 'lineFollowerObstacle');
-  }
-
   function start() {
-    logger.log('start', 'lineFollowerObstacle');
-
     lidar.on('data', onLidarData);
     lineSensor.on('data', onLineData);
 
@@ -55,11 +49,7 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, utils, help
     lineSensor.off('data', onLineData);
 
     motion.stop();
-  }
-
-  function missionComplete() {
-    logger.log('mission complete', 'lineFollowerObstacle');
-    stop();
+    motion.setTrackPose(false);
   }
 
   async function calibrate() {
@@ -204,26 +194,27 @@ module.exports = (withObstacle = false) => ({ config, arena, logger, utils, help
 
     if (state === STATE_LINE_FOLLOWING) {
       if (!lineFollowing(data)) {
-        missionComplete();
+        eventEmitter.emit('mission_complete');
       }
     }
 
-    if (withObstacle && state === STATE_OBSTACLE_AVOIDANCE) {
-      obstacleAvoiding(data);
-    }
+    if (withObstacle) {
+      if (state === STATE_OBSTACLE_AVOIDANCE) {
+        obstacleAvoiding(data);
+      }
 
-    if (withObstacle && state === STATE_REDISCOVER_LINE) {
-      rediscoverLine(data);
-    }
+      if (state === STATE_REDISCOVER_LINE) {
+        rediscoverLine(data);
+      }
 
-    if (withObstacle && state === STATE_ROTATE_TO_LINE) {
-      rotateToLine(data);
+      if (state === STATE_ROTATE_TO_LINE) {
+        rotateToLine(data);
+      }
     }
   }
 
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

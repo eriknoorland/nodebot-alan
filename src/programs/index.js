@@ -4,13 +4,14 @@ const lineFollower = require('./lineFollower');
 const tTime = require('./tTime');
 const cans = require('./cans');
 
-const testRemote = require('./remote');
+const testRemote = require('./test/remote');
 const testDistance = require('./test/distance');
 const testHeading = require('./test/heading');
 const testHeadingCorrection = require('./test/headingCorrection');
 const testRotation = require('./test/rotation');
 const testStraightLine = require('./test/straightLine');
 const testLidarAlignment = require('./test/lidarAlignment');
+const testImuOdometryWithLine = require('./test/imuOdomLine');
 const testUMBMark = require('./test/umbMark');
 const testStartVector = require('./test/startVector');
 const testStartPosition = require('./test/startPosition');
@@ -20,8 +21,8 @@ const testPickupCan = require('./test/pickupCan');
 const testCanDetection = require('./test/canDetection');
 
 const testPrograms = [
-  { name: '--', module: () => {} },
-  { name: '[Test] Remote', module: testRemote },
+  { name: '--', module: null },
+  { name: '[Test] Remote', module: testRemote() },
   { name: '[Test] Rechtuit 1m', module: testDistance(1000) },
   { name: '[Test] Rechtuit 2m', module: testDistance(2000) },
   { name: '[Test] Rechtuit 3m', module: testDistance(3000) },
@@ -46,6 +47,7 @@ const testPrograms = [
   { name: '[Test] Heen & weer 2m CCW', module: testStraightLine(2000, -1) },
   { name: '[Test] Heen & weer 3m CCW', module: testStraightLine(3000, -1) },
   { name: '[Test] Heen & weer 4m CCW', module: testStraightLine(4000, -1) },
+  { name: '[Test] IMU odometry with linefollow track', module: testImuOdometryWithLine() },
   { name: '[Test] UMBMark 1m CW', module: testUMBMark(1000) },
   { name: '[Test] UMBMark 2m CW', module: testUMBMark(2000) },
   { name: '[Test] UMBMark 3m CW', module: testUMBMark(3000) },
@@ -54,22 +56,22 @@ const testPrograms = [
   { name: '[Test] UMBMark 2m CCW', module: testUMBMark(2000, -1) },
   { name: '[Test] UMBMark 3m CCW', module: testUMBMark(3000, -1) },
   { name: '[Test] UMBMark 4m CCW', module: testUMBMark(4000, -1) },
-  { name: '[Test] Lidar alignment', module: testLidarAlignment },
-  { name: '[Test] Start vector', module: testStartVector },
+  { name: '[Test] Lidar alignment', module: testLidarAlignment() },
+  { name: '[Test] Start vector', module: testStartVector() },
   { name: '[Test] Start position', module: testStartPosition() },
   { name: '[Test] Start position - 300', module: testStartPosition(-300) },
   { name: '[Test] Start position + 300', module: testStartPosition(300) },
   { name: '[Test] Verifieër rotatie rechts', module: testVerifyRotation(90) },
   { name: '[Test] Verifieër rotatie links', module: testVerifyRotation(270) },
-  { name: '[Test] Verifieër positie', module: testVerifyPosition },
-  { name: '[Test] Blik pakken', module: testPickupCan },
-  { name: '[Test] Blikken detecteren', module: testCanDetection },
-  { name: '[Test] Remote', module: testRemote },
+  { name: '[Test] Verifieër positie', module: testVerifyPosition() },
+  { name: '[Test] Blik pakken', module: testPickupCan() },
+  { name: '[Test] Blikken detecteren', module: testCanDetection() },
+  { name: '[Test] Remote', module: testRemote() },
 ];
 
 module.exports = [
-  { name: 'Heen & Weer', module: backAndForth },
-  { name: 'Super Slalom', module: superSlalom },
+  { name: 'Heen & Weer', module: backAndForth() },
+  { name: 'Super Slalom', module: superSlalom() },
   { name: 'Lijnvolgen', module: lineFollower() },
   { name: 'Lijnvolgen met Obstakel', module: lineFollower(true) },
   { name: 'T-Tijd', module: tTime() },

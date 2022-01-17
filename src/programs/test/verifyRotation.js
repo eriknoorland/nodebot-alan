@@ -1,36 +1,26 @@
-module.exports = angle => ({ config, arena, logger, utils, helpers, controllers, sensors }) => {
+const EventEmitter = require('events');
+
+module.exports = (angle) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
   const { verifyRotation } = helpers;
   const { motion } = controllers;
 
-  function constructor() {
-    logger.log('constructor', 'testVerifyRotation');
-  }
-
   async function start() {
-    logger.log('start', 'testVerifyRotation');
-
     motion.setTrackPose(true);
 
     await verifyRotation(angle, 90);
 
     motion.setTrackPose(false);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testVerifyRotation');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testVerifyRotation');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };
