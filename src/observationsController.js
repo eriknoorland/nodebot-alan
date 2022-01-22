@@ -1,11 +1,9 @@
 const EventEmitter = require('events');
 
-// FIXME refactor this to create points in the global coordinate
-// system instead of sending both poses and observations
-
-module.exports = (odometry, lidar) => {
+module.exports = (utils, odometry, lidar) => {
   const eventEmitter = new EventEmitter();
-  let observations = {};
+  const { deg2rad } = utils.robotlib.math;
+  let lidarData = {};
 
   function constructor() {
     if (!lidar || !odometry) {
@@ -17,19 +15,27 @@ module.exports = (odometry, lidar) => {
   }
 
   function onPose(pose) {
-    eventEmitter.emit('pose', {
-      ...pose,
-      observations,
-    });
+    const observations = Object
+      .keys(lidarData)
+      .map(angle => {
+        const distance = lidarData[angle];
+        const angleInRadians = deg2rad(parseInt(angle, 10));
 
-    observations = {};
+        return {
+          x: pose.x + (Math.cos(pose.phi + angleInRadians) * distance),
+          y: pose.y + (Math.sin(pose.phi + angleInRadians) * distance),
+        };
+      });
+
+    eventEmitter.emit('pose', { ...pose, observations });
+    lidarData = {};
   }
 
   function onLidarData({ angle, distance }) {
     if (distance) {
       const index = Math.round(angle) % 360;
 
-      observations[index] = distance;
+      lidarData[index] = distance;
     }
   }
 

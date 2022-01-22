@@ -26,9 +26,15 @@ module.exports = (specifics, expectedDevices) => {
     console.log('Initialize logging capabilities');
     const logger = robotlib.utils.logger(socket);
 
+    logger.log('Initializing utility functions');
+    const utils = {
+      ...utilities,
+      robotlib: robotlib.utils,
+    };
+
     logger.log('Setup hardware devices');
     const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, expectedDevices);
-    const observations = observationsController(motion, lidar);
+    const observations = observationsController(utils, motion, lidar);
     const sensors = { odometry: motion, lidar, line, imu, observations };
     const actuators = { motion, gripper };
 
@@ -38,12 +44,6 @@ module.exports = (specifics, expectedDevices) => {
 
     logger.log('Configuring telemetry');
     telemetry = telemetryController(socket, config, sensors, missions);
-
-    logger.log('Initializing utility functions');
-    const utils = {
-      ...utilities,
-      robotlib: robotlib.utils,
-    };
 
     logger.log('Prepare helper functions');
     const helpers = makeHelpers(logger, sensors, actuators, utils);
