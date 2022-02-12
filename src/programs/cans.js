@@ -4,7 +4,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
   const eventEmitter = new EventEmitter();
   const { getArenaMatrix, cellStates } = utils;
   const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
-  const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan } = helpers;
+  const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan, startPosition } = helpers;
   const { motion, gripper } = actuators;
   const { pause } = utils.robotlib;
   const { calculateDistance } = utils.robotlib.math;
@@ -34,20 +34,20 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
 
   async function start() {
     const initialPose = await startPosition(arena.height);
-    const startPosition = { ...initialPose };
+    const desiredStartPosition = { ...initialPose };
 
-    if (startPosition.x < 450) {
-      startPosition.x = 450;
+    if (desiredStartPosition.x < 450) {
+      desiredStartPosition.x = 450;
     }
 
     const verificationPosition = {
-      ...startPosition,
-      y: startPosition.y + 150,
+      ...desiredStartPosition,
+      y: desiredStartPosition.y + 150,
     };
 
     const scanRadius = arena.width / 4;
     const scanPositions = [
-      { ...startPosition, heading: 0 },
+      { ...desiredStartPosition, heading: 0 },
       { x: 850, y: initialPosition.y, heading: 0 },
       { x: 1250, y: initialPosition.y, heading: 0 },
       { x: 1650, y: initialPosition.y, heading: 0 },
