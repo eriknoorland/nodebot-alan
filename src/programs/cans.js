@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 
-module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, actuators, utils, helpers) => {
   const eventEmitter = new EventEmitter();
   const { getArenaMatrix, cellStates } = utils;
   const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
