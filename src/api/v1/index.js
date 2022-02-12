@@ -3,8 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const router = express.Router();
 const logsDir = `${__dirname}/../../../logs`;
+const corsOptions = {
+  origin: '*',
+};
 
-router.all('*', cors());
+router.all('*', cors(corsOptions));
 
 router.get('/logs', async (request, response) => {
   fs.readdir(logsDir, {}, (error, files) => {
