@@ -34,20 +34,20 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
 
   async function start() {
     const initialPose = await startPosition(arena.height);
-    const desiredStartPosition = { ...initialPose };
+    const initialPosition = { ...initialPose };
 
-    if (desiredStartPosition.x < 450) {
-      desiredStartPosition.x = 450;
+    if (initialPosition.x < 450) {
+      initialPosition.x = 450;
     }
 
     const verificationPosition = {
-      ...desiredStartPosition,
-      y: desiredStartPosition.y + 150,
+      ...initialPosition,
+      y: initialPosition.y + 150,
     };
 
     const scanRadius = arena.width / 4;
     const scanPositions = [
-      { ...desiredStartPosition, heading: 0 },
+      { ...initialPosition, heading: 0 },
       { x: 850, y: initialPosition.y, heading: 0 },
       { x: 1250, y: initialPosition.y, heading: 0 },
       { x: 1650, y: initialPosition.y, heading: 0 },
