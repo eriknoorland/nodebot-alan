@@ -26,7 +26,7 @@ module.exports = (logger, sensors, actuators, utils) => {
   const getInitialPosition = makeGetInitialPosition(logger, utils, {});
   const isWithinDistance = makeIsWithinDistance(logger, utils, {}, lidar);
   const narrowPassage = makeNarrowPassage(logger, utils, { isWithinDistance }, lidar, motion);
-  const startPosition = makeStartPosition(logger, utils, { scan, startVector, gotoStartPosition, getInitialPosition }, motion);
+  const startPosition = makeStartPosition(logger, utils, { scan, startVector, verifyRotation, gotoStartPosition, getInitialPosition }, motion);
 
   return {
     scan,

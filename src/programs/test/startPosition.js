@@ -4,7 +4,7 @@ module.exports = (centerOffset = 0) => (logger, config, arena, sensors, actuator
   const eventEmitter = new EventEmitter();
   const { averageMeasurements } = utils.sensor.lidar;
   const { scan, startVector, gotoStartPosition } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
 
   async function start() {
     await startVector();

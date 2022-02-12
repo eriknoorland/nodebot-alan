@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
   const eventEmitter = new EventEmitter();
   const { startVector } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
 
   async function start() {
     await startVector();

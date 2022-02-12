@@ -5,7 +5,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
   const { deg2rad } = utils.robotlib.math;
   const { averageMeasurements, scanObject2Array, getShortestDistance } = utils.sensor.lidar;
   const { scan, pickupCan, dropCan } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
 
   async function start() {
     const pose = { x: 0, y: 0, phi: 0 };

@@ -4,7 +4,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
   const eventEmitter = new EventEmitter();
   const { getArenaMatrix, cellStates } = utils;
   const { verifyRotation, verifyPosition, localiseCans } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
 
   async function start() {
     const matrixResolution = 30;

@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 module.exports = (angle) => (logger, config, arena, sensors, actuators, utils, helpers) => {
   const eventEmitter = new EventEmitter();
   const { verifyRotation } = helpers;
-  const { motion } = controllers;
+  const { motion } = actuators;
 
   async function start() {
     motion.setTrackPose(true);
