@@ -45,8 +45,10 @@ module.exports = (socket, logger, config, sensors, actuators, utils, helpers, mi
   function stopMission() {
     logger.log('Mission stop');
 
-    currentMission.stop();
-    currentMission = null;
+    if (currentMission) {
+      currentMission.stop();
+      currentMission = null;
+    }
 
     logger.save(config.LOGS_DIR);
   }
