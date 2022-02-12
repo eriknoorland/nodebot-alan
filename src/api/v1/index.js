@@ -1,7 +1,10 @@
 const fs = require('fs');
 const express = require('express');
+const cors = require('cors');
 const router = express.Router();
 const logsDir = `${__dirname}/../../../logs`;
+
+router.all('*', cors());
 
 router.get('/logs', async (request, response) => {
   fs.readdir(logsDir, {}, (error, files) => {
