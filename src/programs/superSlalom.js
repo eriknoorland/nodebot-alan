@@ -31,7 +31,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(400, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     await crossover();
@@ -46,7 +46,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(400, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     eventEmitter.emit('mission_complete');

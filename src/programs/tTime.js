@@ -10,7 +10,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
     await startPosition(arena.height, -350);
 
     // A -> B
-    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(400, 0));
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
     await pause(250);
 
@@ -24,7 +24,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
     await narrowPassage();
 
     // center -> A
-    await motion.speedHeading(config.MAX_SPEED, Math.PI, isWithinDistance(400, 0));
+    await motion.speedHeading(config.MAX_SPEED, Math.PI, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     eventEmitter.emit('mission_complete');

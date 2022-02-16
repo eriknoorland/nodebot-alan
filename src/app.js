@@ -46,7 +46,7 @@ module.exports = (specifics, expectedDevices) => {
     telemetry = telemetryController(socket, config, sensors, missions);
 
     logger.log('Prepare helper functions');
-    const helpers = makeHelpers(logger, sensors, actuators, utils);
+    const helpers = makeHelpers(logger, config, sensors, actuators, utils);
 
     logger.log('Setup mission controller');
     missionControl = missionController(socket, logger, config, sensors, actuators, utils, helpers, missions);

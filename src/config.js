@@ -9,6 +9,7 @@ const requiredSpecifics = [
   'MIN_SPEED',
   'MAX_SPEED',
   'MAX_ROTATION_SPEED',
+  'WALL_STOPPING_DISTANCE',
   'HEADING_KP',
   'HEADING_KI',
   'HEADING_KD',

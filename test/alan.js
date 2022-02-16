@@ -12,6 +12,7 @@ const ACCELERATION_STEP = 5; // mm/looptime
 const MIN_SPEED = 50; // mm/s
 const MAX_SPEED = 300; // mm/s
 const MAX_ROTATION_SPEED = MAX_SPEED / 2; // mm/s
+const WALL_STOPPING_DISTANCE = MAX_SPEED * 2; // mm
 const HEADING_KP = 22.5;
 const HEADING_KI = 0.45;
 const HEADING_KD = 0;
@@ -35,6 +36,7 @@ const config = {
   MIN_SPEED,
   MAX_SPEED,
   MAX_ROTATION_SPEED,
+  WALL_STOPPING_DISTANCE,
   HEADING_KP,
   HEADING_KI,
   HEADING_KD,

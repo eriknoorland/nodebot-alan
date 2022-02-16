@@ -8,12 +8,12 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
   async function start() {
     await startPosition(arena.height);
 
-    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(450, 0));
+    await motion.speedHeading(config.MAX_SPEED, 0, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     await motion.rotate(-Math.PI);
 
-    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(450, 0));
+    await motion.speedHeading(config.MAX_SPEED, -Math.PI, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     eventEmitter.emit('mission_complete');

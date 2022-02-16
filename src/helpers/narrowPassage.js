@@ -1,4 +1,4 @@
-const narrowPassage = (logger, utils, helpers, lidar, motion) => {
+const narrowPassage = (logger, config, utils, helpers, lidar, motion) => {
   const { pause } = utils.robotlib;
   const { deg2rad, calculateDistance } = utils.robotlib.math;
   const { getAngleDistance } = utils.sensor.lidar;
@@ -80,10 +80,10 @@ const narrowPassage = (logger, utils, helpers, lidar, motion) => {
 
     await motion.rotate(Math.PI / 2);
     await pause(250);
-    await motion.speedHeading(200, -Math.PI / 2, isWithinDistance(lidar, 400, 0));
+    await motion.speedHeading(200, -Math.PI / 2, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
     await pause(250);
-    await motion.speedHeading(-200, -Math.PI / 2, isWithinDistance(lidar, 750, 180));
+    await motion.speedHeading(-200, -Math.PI / 2, isWithinDistance(850, 180));
     await motion.stop();
     await pause(250);
     await motion.rotate(-Math.PI / 2);

@@ -11,7 +11,7 @@ const makePickupCan = require('./pickupCan');
 const makeDropCan = require('./dropCan');
 const makeStartPosition = require('./startPosition');
 
-module.exports = (logger, sensors, actuators, utils) => {
+module.exports = (logger, config, sensors, actuators, utils) => {
   const { lidar } = sensors;
   const { motion, gripper } = actuators;
 
@@ -25,7 +25,7 @@ module.exports = (logger, sensors, actuators, utils) => {
   const gotoStartPosition = makeGotoStartPosition(logger, utils, {}, motion);
   const getInitialPosition = makeGetInitialPosition(logger, utils, {});
   const isWithinDistance = makeIsWithinDistance(logger, utils, {}, lidar);
-  const narrowPassage = makeNarrowPassage(logger, utils, { isWithinDistance }, lidar, motion);
+  const narrowPassage = makeNarrowPassage(logger, config, utils, { isWithinDistance }, lidar, motion);
   const startPosition = makeStartPosition(logger, utils, { scan, startVector, verifyRotation, gotoStartPosition, getInitialPosition }, motion);
 
   return {
