@@ -7,7 +7,7 @@ module.exports = () => (logger, config, arena, sensors, actuators, utils, helper
   const { startPosition, isWithinDistance, verifyRotation } = helpers;
   const { motion } = actuators;
   const { lidar } = sensors;
-  const { pause } = robotlib.utils;
+  const { pause } = utils.robotlib;
   const startOffset = 250;
   const lidarData = {};
 
