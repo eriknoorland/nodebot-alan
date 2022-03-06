@@ -15,6 +15,7 @@ class Parser extends Transform {
     const decodedPacket = cobs.decode(this.buffer).slice(0, -1);
     const identifier = decodedPacket.toString();
 
+    this.buffer = Buffer.alloc(0);
     this.emit('data', identifier);
 
     callback();
@@ -62,6 +63,7 @@ async function identifyUnknownDevices(expectedDevices, devices) {
     } catch(error) {
       console.log(error);
       devices.splice(i, 1);
+      i -= 1;
     }
   }
 
@@ -69,15 +71,21 @@ async function identifyUnknownDevices(expectedDevices, devices) {
 }
 
 function identify(path) {
+  console.log(`Attempting to identify device on ${path}`);
+
   return new Promise((resolve, reject) => {
     const port = new SerialPort(path, { baudRate: 115200 });
     const parser = port.pipe(new Parser());
     const timeout = setTimeout(() => {
-      port.close();
+      if (port.isOpen) {
+        port.close();
+      }
+
       reject(`Unable to get device identifier for ${path}`);
     }, 5000);
 
     parser.on('data', identifier => {
+      console.log(`Device ${identifier} identified on ${path}`);
       port.close();
       clearTimeout(timeout);
       resolve(identifier);
@@ -85,7 +93,9 @@ function identify(path) {
 
     port.on('open', () => {
       setTimeout(() => {
-        port.write(cobs.encode(Buffer.from([0xAA, 0xAA, 0xAA, 0xAA]), true));
+        if (port.isOpen) {
+          port.write(cobs.encode(Buffer.from([0xAA, 0xAA, 0xAA, 0xAA]), true));
+        }
       }, 2000);
     });
   });
@@ -102,7 +112,10 @@ function convertDeviceArrayToObject(devices) {
 }
 
 module.exports = (expectedDevices, knownDevices) => {
-  const unwantedPorts = ['/dev/tty.Bluetooth-Incoming-Port'];
+  const unwantedPorts = [
+    '/dev/tty.Bluetooth-Incoming-Port', // macos
+    '/dev/ttyAMA0', // raspbian
+  ];
 
   return new Promise(resolve => {
     SerialPort.list()
