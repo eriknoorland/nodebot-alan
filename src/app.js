@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const robotlib = require('robotlib');
 const makeConfig = require('./config');
+const identifyUSBDevices = require('./utils/identifyUSBDevices');
 const socketController = require('./socketController');
 const hardwareController = require('./hardwareController');
 const observationsController = require('./observationsController');
@@ -11,7 +12,7 @@ const utilities = require('./utils');
 const makeHelpers = require('./helpers');
 const missions = require('./programs');
 
-module.exports = (specifics, expectedDevices) => {
+module.exports = (specifics, expectedDevices, knownDevices) => {
   const config = makeConfig(specifics);
   let telemetry = null;
   let missionControl = null;
@@ -32,8 +33,11 @@ module.exports = (specifics, expectedDevices) => {
       robotlib: robotlib.utils,
     };
 
+    logger.log('Identifying connected USB devices');
+    const devices = await identifyUSBDevices(expectedDevices, knownDevices);
+
     logger.log('Setup hardware devices');
-    const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, expectedDevices);
+    const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, devices);
     const observations = observationsController(utils, motion, lidar);
     const sensors = { odometry: motion, lidar, line, imu, observations };
     const actuators = { motion, gripper };

@@ -51,12 +51,26 @@ const config = {
   TELEMETRY_PUBLIC_FOLDER: process.env.TELEMETRY_PUBLIC_FOLDER,
 };
 
-const expectedDevices = {
-  lidar: process.env.USB_PORT_LIDAR,
-  imu: process.env.USB_PORT_IMU,
-  line: process.env.USB_PORT_LINE_SENSOR,
-  gripper: process.env.USB_PORT_GRIPPER,
-  motion: process.env.USB_PORT_MOTION,
-};
+const expectedDevices = ['lidar', 'imu', 'line', 'gripper', 'motion'];
+const knownDevices = [
+  {
+    id: 'lidar',
+    manufacturer: 'Silicon Labs',
+    vendorId: '10c4',
+    productId: 'ea60',
+  },
+  {
+    id: 'motion',
+    manufacturer: 'Teensyduino',
+    vendorId: '16c0',
+    productId: '0483',
+  },
+  {
+    id: 'imu',
+    manufacturer: 'Seeed',
+    vendorId: '2886',
+    productId: '802f',
+  },
+];
 
-nodebot(config, expectedDevices);
+nodebot(config, expectedDevices, knownDevices);
