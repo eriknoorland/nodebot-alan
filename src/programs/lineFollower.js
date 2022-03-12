@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 
-module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+module.exports = (withObstacle = false) => (logger, config, arena, sensors, actuators, utils, helpers) => {
   const eventEmitter = new EventEmitter();
   const STATE_IDLE = 'idle';
   const STATE_CALIBRATION = 'calibration';
