@@ -1,22 +1,15 @@
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
+const EventEmitter = require('events');
 
-module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
-  const { motion, gripper } = controllers;
-  const { lidar } = sensors;
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers, socket) => {
+  const eventEmitter = new EventEmitter();
+  const { averageMeasurements } = utils.sensor.lidar;
+  const { scan, getInitialPosition } = helpers;
+  const { motion, gripper } = actuators;
 
   let currentPose = {};
 
-  function constructor() {
-    logger.log('constructor', 'remote');
-  }
-
   async function start() {
-    logger.log('start', 'remote');
-
-    const scanData = await scan(lidar, 1000);
-    const averagedMeasurements = averageMeasurements(scanData);
+    const averagedMeasurements = averageMeasurements(await scan(1000));
     const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
 
     motion.on('pose', onPose);
@@ -39,8 +32,6 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   }
 
   function stop() {
-    logger.log('stop', 'remote');
-
     motion.off('pose', onPose);
 
     socket.removeListener('ArrowUp', forward);
@@ -56,6 +47,8 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
     socket.removeListener('KeyP', onGripperClose);
 
     socket.removeListener('waypoints', waypoints);
+
+    motion.setTrackPose(false);
   }
 
   function forward() {
@@ -113,6 +106,7 @@ module.exports = ({ config, arena, logger, controllers, sensors, socket }) => {
   constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

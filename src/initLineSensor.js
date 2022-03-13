@@ -16,11 +16,25 @@ const initLineSensor = portName => new Promise((resolve, reject) => {
     reject('line sensor timed out');
   }, 5000);
 
+  let isReady = false;
+
+  const isReadyTimeout = setTimeout(() => {
+    if (!isReady) {
+      lineSensor.isReady()
+        .catch(reject);
+    }
+  }, 2500);
+
+  const onInit = () => {
+    isReady = true;
+    clearTimeout(isReadyTimeout);
+    clearTimeout(errorTimeout);
+    resolve(lineSensor);
+  };
+
   lineSensor.init()
-    .then(() => {
-      clearTimeout(errorTimeout);
-      resolve(lineSensor);
-    });
+    .then(onInit)
+    .catch(reject);
 });
 
 module.exports = initLineSensor;

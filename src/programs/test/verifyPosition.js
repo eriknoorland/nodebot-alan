@@ -1,38 +1,26 @@
-const verifyPosition = require('../../helpers/verifyPosition');
+const EventEmitter = require('events');
 
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testVerifyPosition');
-  }
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { verifyPosition } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testVerifyPosition');
-
     motion.setTrackPose(true);
 
-    await verifyPosition(arena, lidar, motion, 0);
+    await verifyPosition(arena, 0);
 
     motion.setTrackPose(false);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testVerifyPosition');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testVerifyPosition');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

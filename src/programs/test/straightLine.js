@@ -1,13 +1,10 @@
-module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
+const EventEmitter = require('events');
 
-  function constructor() {
-    logger.log('constructor', 'testStraightLine');
-  }
+module.exports = (distance, rotationDirection = 1) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testStraightLine');
-
     const startPose = {
       x: 200,
       y: arena.height * 0.75,
@@ -34,22 +31,15 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
       poseDiffY,
     });
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testStraightLine');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testStraightLine');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

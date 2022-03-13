@@ -4,7 +4,7 @@
  * @param {Number} allowedDistance
  * @param {Number} checkAngle
  */
-const isWithinDistance = (lidar, allowedDistance, checkAngle) => {
+const isWithinDistance = (logger, utils, helpers, lidar) => (allowedDistance, checkAngle = 0) => {
   let targetDistanceReached = false;
   let count = 0;
 

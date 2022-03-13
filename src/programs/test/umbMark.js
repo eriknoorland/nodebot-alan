@@ -1,16 +1,11 @@
-const robotlib = require('robotlib');
-const { pause } = robotlib.utils;
+const EventEmitter = require('events');
 
-module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-
-  function constructor() {
-    logger.log('constructor', 'testUMBMark');
-  }
+module.exports = (distance, rotationDirection = 1) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { pause } = utils.robotlib;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testUMBMark');
-
     motion.setTrackPose(true);
     motion.appendPose({ x: 200, y: arena.height * 0.75, phi: 0 });
 
@@ -34,22 +29,15 @@ module.exports = (distance, rotationDirection = 1) => ({ config, arena, logger, 
 
     await motion.rotate((Math.PI / 2) * rotationDirection);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testUMBMark');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testUMBMark');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

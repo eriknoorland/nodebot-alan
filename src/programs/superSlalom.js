@@ -1,19 +1,13 @@
-const robotlib = require('robotlib');
-const getAngleDistance = require('../utils/sensor/lidar/getAngleDistance');
-const scan = require('../utils/sensor/lidar/scan');
-const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
-const solveStartVector = require('../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../utils/motion/gotoStartPosition');
-const getInitialPosition = require('../utils/motion/getInitialPosition');
-const verifyRotation = require('../helpers/verifyRotation');
+const EventEmitter = require('events');
 
-const { pause } = robotlib.utils;
-const { rad2deg, deg2rad, calculateDistance } = robotlib.utils.math;
-
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { getAngleDistance } = utils.sensor.lidar;
+  const { rad2deg, deg2rad, calculateDistance } = utils.robotlib.math;
+  const { startPosition, isWithinDistance, verifyRotation } = helpers;
+  const { motion } = actuators;
   const { lidar } = sensors;
+  const { pause } = utils.robotlib;
   const startOffset = 250;
   const lidarData = {};
 
@@ -21,27 +15,11 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   let side = 'left';
 
   function constructor() {
-    logger.log('constructor', 'superSlalom');
     lidar.on('data', onLidarData);
   }
 
   async function start() {
-    logger.log('start', 'superSlalom');
-
-    await solveStartVector(lidar, motion);
-
-    const startPositionScanData = await scan(lidar, 1000);
-    const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
-    await gotoStartPosition(startPositionAveragedMeasurements, motion, startOffset);
-
-    await verifyRotation(lidar, motion, 90, 60);
-
-    const initialPositionScanData = await scan(lidar, 1000);
-    const averagedMeasurements = averageMeasurements(initialPositionScanData);
-    const { x, y } = getInitialPosition(averagedMeasurements, arena.height);
-
-    motion.setTrackPose(true);
-    motion.appendPose({ x, y, phi: heading });
+    await startPosition(arena.height, startOffset);
 
     await findGap();
     await motion.stop();
@@ -53,7 +31,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 400, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
     await crossover();
@@ -68,10 +46,10 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await moveThroughGap();
     side = 'left';
 
-    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(lidar, 400, 0));
+    await motion.speedHeading(config.MAX_SPEED, heading, isWithinDistance(config.WALL_STOPPING_DISTANCE));
     await motion.stop();
 
-    missionComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function findGap() {
@@ -89,31 +67,25 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
 
         if (!isAtFirstCan && minDistance < 600) {
           isAtFirstCan = true;
-          // console.log('findGap - is at first can');
         }
 
         if (isAtFirstCan) {
           if (!hasCounterStarted && maxDistance > 600) {
             hasCounterStarted = true;
             startPose = motion.getPose();
-            // console.log('findGap - gap counter started');
           }
 
           if (hasCounterStarted) {
             const currentPose = motion.getPose();
             const distanceTravelled = calculateDistance(startPose, currentPose);
-            // console.log({ distanceTravelled });
 
             if (distanceTravelled >= 95) {
-              // console.log('findGap - gap found');
               clearInterval(interval);
               resolve();
               return;
             }
 
-            // if (minDistance < 600 && distanceTravelled > 70) {
             if (minDistance < 600) {
-              // console.log('findGap - gap counter reset');
               hasCounterStarted = false;
             }
           }
@@ -134,9 +106,6 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     const angleDiffRad = deg2rad(angleDiff);
     const remainingDistance = Math.abs(Math.sin(angleDiffRad) * lidarData[frontCanAngle]);
     const centerOffsetDistance = -(Math.abs(((240 / 2) - remainingDistance)) * 1.05);
-
-    // console.log({ frontCanAngle, inAngleAbsolute, remainingDistance }, lidarData[frontCanAngle]);
-    // console.log({ centerOffsetDistance });
 
     await pause(250);
     await motion.distanceHeading(centerOffsetDistance, heading);
@@ -180,21 +149,17 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     await motion.rotate(-Math.PI / 2);
     await pause(250);
 
-    await verifyRotation(lidar, motion, 90, 60);
+    await verifyRotation(90, 60);
     await pause(250);
 
     return Promise.resolve();
   }
 
   function stop() {
-    logger.log('stop', 'superSlalom');
     motion.stop(true);
-    lidar.off('data', onLidarData);
-  }
+    motion.setTrackPose(false);
 
-  function missionComplete() {
-    logger.log('mission complete', 'superSlalom');
-    stop();
+    lidar.off('data', onLidarData);
   }
 
   function onLidarData({ angle, distance }) {
@@ -208,6 +173,7 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
   constructor();
 
   return {
+    events: eventEmitter,
     start,
     stop,
   };

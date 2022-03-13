@@ -1,80 +1,96 @@
-const robotlib = require('robotlib');
+const narrowPassage = (logger, config, utils, helpers, lidar, motion) => {
+  const { pause } = utils.robotlib;
+  const { deg2rad, calculateDistance } = utils.robotlib.math;
+  const { getAngleDistance } = utils.sensor.lidar;
+  const { isWithinDistance } = helpers;
 
-const { deg2rad } = robotlib.utils.math;
-const { getShortestDistance } = robotlib.utils.sensor.lidar;
+  function findGap(motion, lidarData) {
+    let hasCounterStarted = false;
+    let startPose;
 
-const scanData2Array = (data, acc, a) => {
-  const angle = a > 180 ? (360 - a) * -1 : parseInt(a, 10);
-  const distance = data[a];
+    return new Promise(resolve => {
+      motion.speedHeading(100, Math.PI);
 
-  acc.push({ angle, distance });
-  return acc;
-};
+      const interval = setInterval(() => {
+        const minDistance = getAngleDistance(lidarData, 90, 1);
+        const maxDistance = getAngleDistance(lidarData, 90, 1, 'max');
 
-const getScanRange = (range, angle) => {
-  return angle >= (360 - range) || angle <= range;
-}
+        if (!hasCounterStarted && maxDistance > 1000) {
+          hasCounterStarted = true;
+          startPose = motion.getPose();
+        }
 
-const narrowPassage = async (motion, lidarData) => {
-  const measurements = Object.keys(lidarData)
-    .filter(getScanRange.bind(null, 50))
-    .reduce(scanData2Array.bind(null, lidarData), [])
-    .sort((a, b) => a.angle - b.angle);
+        if (hasCounterStarted) {
+          const currentPose = motion.getPose();
+          const distanceTravelled = calculateDistance(startPose, currentPose);
 
-  const shortestDistance = getShortestDistance(measurements);
-  const distanceToObstacleLine = shortestDistance.distance * Math.cos(deg2rad(shortestDistance.angle));
-  const obstacleMeasurements = measurements.filter(({ angle, distance }) => {
-    const a = angle < 0 ? (360 + angle) : angle;
-    const referenceS = distanceToObstacleLine / Math.cos(deg2rad(a));
+          if (distanceTravelled >= 118) {
+            clearInterval(interval);
+            resolve();
+            return;
+          }
 
-    return distance < referenceS + 50;
-  });
-
-  const gap = { minAngle: 0, maxAngle: 0 };
-
-  for (let i = 1, x = obstacleMeasurements.length; i < x; i += 1) {
-    const minAngle = obstacleMeasurements[i - 1].angle;
-    const maxAngle = obstacleMeasurements[i].angle;
-    const angleDiff = maxAngle - minAngle;
-
-    if (angleDiff > gap.maxAngle - gap.minAngle) {
-      gap.maxAngle = maxAngle;
-      gap.minAngle = minAngle;
-    }
+          if (minDistance < 1000 && distanceTravelled > 80) {
+            hasCounterStarted = false;
+          }
+        }
+      }, 10);
+    });
   }
 
-  const gapAngle = Math.round((gap.minAngle + gap.maxAngle) / 2);
-  const normalizedGapAngle = (360 + gapAngle) % 360;
-  // const sideDistanceOffset = Math.floor(gapAngle / 15) * 25;
+  function findFrontCanAngle(lidarData, referenceAngle) {
+    const reversedLidarData = [...Object.keys(lidarData)].reverse();
+    const frontCanAngle = reversedLidarData.map(angle => parseInt(angle, 10))
+      .filter(angle => angle < referenceAngle && angle > referenceAngle - 60)
+      .find(angle => lidarData[angle] < 1000);
 
-  console.log({
-    gapAngle,
-    normalizedGapAngle,
-    // sideDistanceOffset,
-  });
+    return frontCanAngle;
+  }
 
-  const sideDistance = (distanceToObstacleLine * Math.tan(deg2rad(normalizedGapAngle))); // + sideDistanceOffset;
-  const forwardDistance = distanceToObstacleLine - 250;
-  const turnAngle = Math.atan(sideDistance / forwardDistance);
-  const driveDistance = Math.round((Math.sqrt(Math.pow(forwardDistance, 2) + Math.pow(sideDistance, 2))));
+  return async () => {
+    let lidarData = {};
 
-  console.log({
-    sideDistance,
-    // forwardDistance,
-    turnAngle,
-    driveDistance,
-  });
+    const onLidarData = ({ angle, distance }) => {
+      if (distance) {
+        lidarData[Math.round(angle)] = distance;
+      } else {
+        delete lidarData[Math.round(angle)];
+      }
+    };
 
-  // move to gap
-  await motion.rotate(turnAngle);
-  await motion.distanceHeading(driveDistance, turnAngle);
-  await motion.rotate(turnAngle * -1);
+    lidar.on('data', onLidarData);
 
-  // go trough gap
-  // await motion.speedHeading(200 / 2, 0, isWithinDistance(lidar, 250, 0));
-  // await motion.stop();
+    await motion.distanceHeading(800, Math.PI);
+    await pause(250);
 
-  return Promise.resolve();
+    await findGap(motion, lidarData);
+    await motion.stop();
+    await pause(250);
+
+    const frontCanAngle = findFrontCanAngle(lidarData, 90);
+    const angleDiff = frontCanAngle - 90;
+    const angleDiffRad = deg2rad(angleDiff);
+    const remainingDistance = Math.abs(Math.sin(angleDiffRad) * lidarData[frontCanAngle]);
+    const centerOffsetDistance = -(Math.abs(((240 / 2) - remainingDistance)) * 1.05);
+
+    lidar.off('data', onLidarData);
+
+    await motion.distanceHeading(centerOffsetDistance, -Math.PI);
+    await pause(250);
+
+    await motion.rotate(Math.PI / 2);
+    await pause(250);
+    await motion.speedHeading(200, -Math.PI / 2, isWithinDistance(config.WALL_STOPPING_DISTANCE));
+    await motion.stop();
+    await pause(250);
+    await motion.speedHeading(-200, -Math.PI / 2, isWithinDistance(850, 180));
+    await motion.stop();
+    await pause(250);
+    await motion.rotate(-Math.PI / 2);
+    await pause(250);
+
+    return Promise.resolve();
+  };
 };
 
 module.exports = narrowPassage;

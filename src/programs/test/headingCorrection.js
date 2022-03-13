@@ -1,34 +1,24 @@
-const robotlib = require('robotlib');
-const scan = require('../../utils/sensor/lidar/scan');
-const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
-const solveStartVector = require('../../utils/motion/solveStartVector2');
-const getInitialPosition = require('../../utils/motion/getInitialPosition');
+const EventEmitter = require('events');
 
-const { pause } = robotlib.utils;
-const { deg2rad } = robotlib.utils.math;
-
-module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testHeadingCorrection');
-  }
+module.exports = (distance) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { pause } = utils.robotlib;
+  const { deg2rad } = utils.robotlib.math;
+  const { averageMeasurements } = utils.sensor.lidar;
+  const { scan, startVector, getInitialPosition } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testHeadingCorrection');
-
     // simple test
     // motion.setTrackPose(true);
     // motion.appendPose({ x: 200, y: arena.height * 0.75, phi: 0 });
     // await motion.distanceHeading(distance, deg2rad(5));
 
-    await solveStartVector(lidar, motion);
+    await startVector();
     await pause(250);
 
-    const initialPositionScanData = await scan(lidar, 2000);
-    const initialPositionAveragedMeasurements = averageMeasurements(initialPositionScanData);
-    const { x, y } = getInitialPosition(initialPositionAveragedMeasurements, arena.height);
+    const initialPositionMeasurements = averageMeasurements(await scan(2000));
+    const { x, y } = getInitialPosition(initialPositionMeasurements, arena.height);
 
     motion.setTrackPose(true);
     motion.appendPose({ x, y, phi: 0 });
@@ -38,22 +28,15 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
 
     await motion.distanceHeading(distance, 0);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testHeadingCorrection');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testHeadingCorrection');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

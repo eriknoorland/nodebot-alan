@@ -1,7 +1,7 @@
-const mapLidarData2Points = require('../sensor/lidar/mapLidarData2Points');
-const houghAcc = require('../sensor/lidar/houghAcc');
-const findLines = require('../sensor/lidar/findLines');
-const findCorners = require('../sensor/lidar/findCorners');
+const mapLidarData2Points = require('../utils/sensor/lidar/mapLidarData2Points');
+const houghAcc = require('../utils/sensor/lidar/houghAcc');
+const findLines = require('../utils/sensor/lidar/findLines');
+const findCorners = require('../utils/sensor/lidar/findCorners');
 
 /**
  *

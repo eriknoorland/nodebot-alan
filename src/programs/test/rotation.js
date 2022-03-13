@@ -1,13 +1,10 @@
-module.exports = (numRotations = 1) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
+const EventEmitter = require('events');
 
-  function constructor() {
-    logger.log('constructor', 'testRotation');
-  }
+module.exports = (numRotations = 1) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testRotation');
-
     let totalLeftTicks = 0;
     let totalRightTicks = 0;
 
@@ -45,22 +42,15 @@ module.exports = (numRotations = 1) => ({ config, arena, logger, controllers, se
       rightDistanceDiff,
     });
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testRotation');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testRotation');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

@@ -1,38 +1,26 @@
-const verifyRotation = require('../../helpers/verifyRotation');
+const EventEmitter = require('events');
 
-module.exports = angle => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testVerifyRotation');
-  }
+module.exports = (angle) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { verifyRotation } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testVerifyRotation');
-
     motion.setTrackPose(true);
 
-    await verifyRotation(lidar, motion, angle, 90);
+    await verifyRotation(angle, 90);
 
     motion.setTrackPose(false);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testVerifyRotation');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testVerifyRotation');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

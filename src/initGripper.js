@@ -17,15 +17,30 @@ const initGripper = (portName, config) => new Promise((resolve, reject) => {
     reject('gripper timed out');
   }, 5000);
 
+  let isReady = false;
+
+  const isReadyTimeout = setTimeout(() => {
+    if (!isReady) {
+      gripper.isReady()
+        .catch(reject);
+    }
+  }, 2500);
+
+  const onInit = () => {
+    isReady = true;
+
+    clearTimeout(isReadyTimeout);
+    clearTimeout(errorTimeout);
+
+    gripper.setLiftAngle(config.GRIPPER_LIFT_DOWN_ANGLE);
+    gripper.setJawAngle(config.GRIPPER_JAW_OPEN_ANGLE);
+
+    resolve(gripper);
+  };
+
   gripper.init()
-    .then(() => {
-      clearTimeout(errorTimeout);
-
-      gripper.setLiftAngle(config.GRIPPER_LIFT_DOWN_ANGLE);
-      gripper.setJawAngle(config.GRIPPER_JAW_OPEN_ANGLE);
-
-      resolve(gripper);
-    });
+    .then(onInit)
+    .catch(reject);
 });
 
 module.exports = initGripper;

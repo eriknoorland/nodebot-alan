@@ -1,20 +1,12 @@
-const getArenaMatrix = require('../../utils/getArenaMatrix');
-const localiseCans = require('../../utils/localiseCans');
-const verifyPosition = require('../../helpers/verifyPosition');
-const verifyRotation = require('../../helpers/verifyRotation');
-const cellStates = require('../../utils/cellStates');
+const EventEmitter = require('events');
 
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testCanDetection');
-  }
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { getArenaMatrix, cellStates } = utils;
+  const { verifyRotation, verifyPosition, localiseCans } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testCanDetection');
-
     const matrixResolution = 30;
 
     motion.setTrackPose(true);
@@ -22,11 +14,11 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     const scanRadius = 900;
     const matrix = getArenaMatrix(arena.width, arena.height, matrixResolution);
 
-    await verifyRotation(lidar, motion, 90, 60);
-    await verifyPosition(arena, lidar, motion, 0);
+    await verifyRotation(90, 60);
+    await verifyPosition(arena, 0);
 
     const scanPose = motion.getPose();
-    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, lidar, matrixResolution);
+    const localisedCans = await localiseCans(scanRadius, matrix, scanPose, matrixResolution);
 
     // mark matrix
     const pose = motion.getPose();
@@ -39,22 +31,15 @@ module.exports = ({ config, arena, logger, controllers, sensors }) => {
     // visualize
     matrix.forEach(row => console.log(row.toString()));
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testCanDetection');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testCanDetection');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

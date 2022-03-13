@@ -1,16 +1,7 @@
-const robotlib = require('robotlib');
-const getAngleDistance = require('../sensor/lidar/getAngleDistance');
+const gotoStartPosition = (logger, utils, helpers, motion) => async (measurements, centerOffset = 0) => {
+  const { pause } = utils.robotlib;
+  const { getAngleDistance } = utils.sensor.lidar;
 
-const { pause } = robotlib.utils;
-
-/**
- *
- * @param {Object} measurements
- * @param {Object} motion
- * @param {Number} centerOffset [-x / x]
- * @return {Promise}
- */
-const gotoStartPosition = async (measurements, motion, centerOffset = 0) => {
   const offsetLeft = Math.round(getAngleDistance(measurements, 270));
   const offsetRight = Math.round(getAngleDistance(measurements, 90));
   const currentOffset = Math.round((offsetLeft - offsetRight) / 2);
@@ -24,8 +15,10 @@ const gotoStartPosition = async (measurements, motion, centerOffset = 0) => {
 
   await motion.rotate(angle);
   await pause(250);
+
   await motion.distanceHeading(distance, angle);
   await pause(250);
+
   await motion.rotate(angle * -1);
   await pause(250);
 

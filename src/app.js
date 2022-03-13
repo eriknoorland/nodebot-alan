@@ -1,210 +1,82 @@
 require('dotenv').config();
 
-const shell = require('shelljs');
-const http = require('http');
-const express = require('express');
-const socketio = require('socket.io');
 const robotlib = require('robotlib');
+const makeConfig = require('./config');
+const identifyUSBDevices = require('./utils/identifyUSBDevices');
+const socketController = require('./socketController');
+const hardwareController = require('./hardwareController');
+const observationsController = require('./observationsController');
+const telemetryController = require('./telemetryController');
+const missionController = require('./missionController');
+const utilities = require('./utils');
+const makeHelpers = require('./helpers');
+const missions = require('./programs');
 
-const config = require('./config');
-const programs = require('./programs');
-const telemetry = require('./telemetry');
-const initLidar = require('./initLidar');
-const initGripper = require('./initGripper');
-const initLineSensor = require('./initLineSensor');
-const initMotionController = require('./initMotionController');
+module.exports = (specifics, expectedDevices, knownDevices) => {
+  const config = makeConfig(specifics);
+  let telemetry = null;
+  let missionControl = null;
 
-const socketOptions = {
-  allowEIO3: true,
-  cors: {
-    origin: '*',
-  },
-};
+  async function init() {
+    console.log('Setup socket server');
+    const io = await socketController(config.TELEMETRY_PUBLIC_FOLDER);
 
-const expectedUSBDevices = {
-  lidar: process.env.USB_PORT_LIDAR,
-  gripper: process.env.USB_PORT_GRIPPER,
-  lineSensor: process.env.USB_PORT_LINE_SENSOR,
-  motion: process.env.USB_PORT_MOTION,
-};
+    console.log('Waiting for client to connect...');
+    const socket = await socketClient(io);
 
-const app = express();
-const httpServer = http.createServer(app);
-const io = socketio(httpServer, socketOptions);
-const logger = robotlib.utils.logger(io);
-const defaultProgramOptions = {
-  io,
-  config,
-  logger,
-  controllers: {},
-  sensors: {},
-};
+    console.log('Initialize logging capabilities');
+    const logger = robotlib.utils.logger(socket);
 
-let currentProgram;
+    logger.log('Initializing utility functions');
+    const utils = {
+      ...utilities,
+      robotlib: robotlib.utils,
+    };
 
-app.use(express.static(process.env.TELEMETRY_PUBLIC_FOLDER));
+    logger.log('Identifying connected USB devices');
+    const devices = await identifyUSBDevices(expectedDevices, knownDevices);
 
-const init = () => {
-  logger.log('initialize');
-  logger.log('server started', 'telemetry', 'green');
+    logger.log('Setup hardware devices');
+    const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, devices);
+    const observations = observationsController(utils, motion, lidar);
+    const sensors = { odometry: motion, lidar, line, imu, observations };
+    const actuators = { motion, gripper };
 
-  initUSBDevices(expectedUSBDevices)
-    .then(initTelemetry)
-    .then(updateProgramOptions);
-};
+    observations.on('pose', observation => {
+      logger.data(observation, 'observation');
+    });
 
-const onSocketDisconnect = () => {
-  logger.log('client disconnected', 'telemetry', 'yellow');
-};
+    logger.log('Configuring telemetry');
+    telemetry = telemetryController(socket, config, sensors, missions);
 
-const onSocketConnection = socket => {
-  logger.log('client connected', 'telemetry', 'green');
+    logger.log('Prepare helper functions');
+    const helpers = makeHelpers(logger, config, sensors, actuators, utils);
 
-  socket.on('disconnect', onSocketDisconnect);
-  socket.on('start', onStart.bind(null, socket));
-  socket.on('restart', onRestart);
-  socket.on('stop', onStop);
-  socket.on('reboot', onReboot);
-  socket.on('shutdown', onShutdown);
-  socket.on('emergencyStop', onEmergencyStop);
-  socket.on('selected_arena', selectedArena => {
-    logger.log(`arena selected - ${selectedArena.name}`, 'app');
-    defaultProgramOptions.arena = selectedArena;
-  });
+    logger.log('Setup mission controller');
+    missionControl = missionController(socket, logger, config, sensors, actuators, utils, helpers, missions);
 
-  socket.emit('setup', {
-    programs: programs,
-    sensors: ['lidar', 'odometry', 'poses', 'line', 'battery'],
-    name: 'Alan',
-  });
-};
+    telemetry.ready();
+    logger.success('Ready to go!');
 
-const onStart = (socket, programIndex) => {
-  if (programIndex === null) {
-    logger.log('No state selected', 'error', 'red');
-    return;
+    io.on('connection', onSocketConnection);
   }
 
-  const selectedProgram = programs[programIndex];
-
-  logger.log(`start "${selectedProgram.name}" state`);
-
-  currentProgram = selectedProgram.module({ ...defaultProgramOptions, socket });
-  currentProgram.start();
-}
-
-const onStop = async () => {
-  logger.log('stop');
-
-  await exitHandler();
-
-  shell.exec(`kill -9 ${process.pid}`);
-};
-
-const onRestart = async () => {
-  logger.log('restart');
-
-  await exitHandler();
-
-  shell.exec(`kill -9 ${process.pid} && npm start`);
-};
-
-const onReboot = async () => {
-  logger.log('reboot', 'app', 'red');
-
-  await exitHandler();
-
-  shell.exec('sudo reboot');
-};
-
-const onShutdown = async () => {
-  logger.log('shutdown', 'app', 'red');
-
-  await exitHandler();
-
-  shell.exec('sudo shutdown -h now');
-};
-
-const onEmergencyStop = () => {
-  logger.log('emergency stop!', 'app', 'red');
-
-  if (defaultProgramOptions.controllers.motion) {
-    defaultProgramOptions.controllers.motion.emergencyStop();
-  }
-};
-
-const initUSBDevices = async ({ lidar, gripper, lineSensor, motion }) => {
-  const usbDevices = {};
-
-  logger.log('start initializing usb devices...');
-
-  try {
-    usbDevices.lidar = await initLidar(lidar, config);
-    logger.log(`lidar initialized!`, 'app', 'cyan');
-  } catch(error) {
-    logger.log(error, 'app', 'red');
+  function onSocketConnection(socket) {
+    if (telemetry) {
+      missionControl.setSocket(socket);
+      telemetry.setSocket(socket);
+      telemetry.setup();
+      telemetry.ready();
+    }
   }
 
-  try {
-    usbDevices.gripper = await initGripper(gripper, config);
-    logger.log(`gripper initialized!`, 'app', 'cyan');
-  } catch(error) {
-    logger.log(error, 'app', 'red');
+  function socketClient(io) {
+    return new Promise(resolve => {
+      io.on('connection', socket => {
+        resolve(socket);
+      });
+    });
   }
 
-  try {
-    usbDevices.lineSensor = await initLineSensor(lineSensor);
-    logger.log(`line sensor initialized!`, 'app', 'cyan');
-  } catch(error) {
-    logger.log(error, 'app', 'red');
-  }
-
-  try {
-    usbDevices.motion = await initMotionController(motion, config);
-    logger.log(`motion controller initialized!`, 'app', 'cyan');
-  } catch(error) {
-    logger.log(error, 'app', 'red');
-  }
-
-  return Promise.resolve(usbDevices);
+  init();
 };
-
-const initTelemetry = usbDevices => {
-  logger.log('initialize telemetry');
-
-  telemetry(io, config, usbDevices);
-
-  return Promise.resolve(usbDevices);
-};
-
-const updateProgramOptions = usbDevices => {
-  logger.log('update state options');
-
-  defaultProgramOptions.controllers.motion = usbDevices.motion;
-  defaultProgramOptions.controllers.gripper = usbDevices.gripper;
-  defaultProgramOptions.sensors.lidar = usbDevices.lidar;
-  defaultProgramOptions.sensors.line = usbDevices.lineSensor;
-
-  return Promise.resolve();
-};
-
-const exitHandler = async () => {
-  logger.log('clean up before exit');
-
-  if (currentProgram) {
-    currentProgram.stop();
-    currentProgram = null;
-  }
-
-  const { controllers, sensors } = defaultProgramOptions;
-
-  controllers.gripper && await controllers.gripper.close();
-  controllers.motion && await controllers.motion.close();
-  sensors.lidar && await sensors.lidar.close();
-  sensors.line && await sensors.line.close();
-
-  logger.log('done cleaning up');
-};
-
-io.on('connection', onSocketConnection);
-httpServer.listen(3000, init);

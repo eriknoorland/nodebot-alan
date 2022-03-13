@@ -1,41 +1,22 @@
-// const scan = require('../utils/sensor/lidar/scan');
-// const averageMeasurements = require('../utils/sensor/lidar/averageMeasurements');
-// const isWithinDistance = require('../utils/sensor/lidar/isWithinDistance');
-const solveStartVector = require('../../utils/motion/solveStartVector2');
+const EventEmitter = require('events');
 
-module.exports = ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'startVector');
-  }
+module.exports = () => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { startVector } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'startVector');
+    await startVector();
 
-    // const startVectorScanData = await scan(lidar, 2000);
-    // const startVectorAveragedMeasurements = averageMeasurements(startVectorScanData);
-    // solveStartVectorHough(startVectorAveragedMeasurements, arena.height, 50, motion);
-
-    await solveStartVector(lidar, motion);
-
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'startVector');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'startVector');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

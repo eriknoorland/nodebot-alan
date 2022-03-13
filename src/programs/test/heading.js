@@ -1,33 +1,20 @@
-const robotlib = require('robotlib');
-const scan = require('../../utils/sensor/lidar/scan');
-const averageMeasurements = require('../../utils/sensor/lidar/averageMeasurements');
-const solveStartVector = require('../../utils/motion/solveStartVector2');
-const gotoStartPosition = require('../../utils/motion/gotoStartPosition');
-const getInitialPosition = require('../../utils/motion/getInitialPosition');
-const getAngleDistance = require('../../utils/sensor/lidar/getAngleDistance');
+const EventEmitter = require('events');
 
-const { pause } = robotlib.utils;
-
-module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
-  const { lidar } = sensors;
-
-  function constructor() {
-    logger.log('constructor', 'testHeading');
-  }
+module.exports = (distance) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { pause } = utils.robotlib;
+  const { averageMeasurements, getAngleDistance } = utils.sensor.lidar;
+  const { scan, startVector, gotoStartPosition, getInitialPosition } = helpers;
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testHeading');
-
-    await solveStartVector(lidar, motion);
+    await startVector();
     await pause(250);
 
-    // const startPositionScanData = await scan(lidar, 2000);
-    // const startPositionAveragedMeasurements = averageMeasurements(startPositionScanData);
-    // await gotoStartPosition(startPositionAveragedMeasurements, motion);
+    // const startPositionAveragedMeasurements = averageMeasurements(await scan(2000));
+    // await gotoStartPosition(startPositionAveragedMeasurements);
 
-    const initialPositionScanData = await scan(lidar, 2000);
-    const initialPositionAveragedMeasurements = averageMeasurements(initialPositionScanData);
+    const initialPositionAveragedMeasurements = averageMeasurements(await scan(2000));
     const { x, y } = getInitialPosition(initialPositionAveragedMeasurements, arena.height);
     const startRightDistance = getAngleDistance(initialPositionAveragedMeasurements, 90);
 
@@ -37,8 +24,7 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
 
     await motion.distanceHeading(distance, 0);
 
-    const endPositionScanData = await scan(lidar, 2000);
-    const endPositionAveragedMeasurements = averageMeasurements(endPositionScanData);
+    const endPositionAveragedMeasurements = averageMeasurements(await scan(2000));
     const endRightDistance = getAngleDistance(endPositionAveragedMeasurements, 90);
     const distanceDiff = endRightDistance - startRightDistance;
     const endPose = motion.getPose();
@@ -55,22 +41,15 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
       poseDiffY,
     });
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testHeading');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testHeading');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };

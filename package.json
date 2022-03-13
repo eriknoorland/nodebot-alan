@@ -1,21 +1,21 @@
 {
   "name": "nodebot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "line-sensor": "git+https://git@github.com/eriknoorland/node-line-sensor.git",
     "mathjs": "^9.4.4",
     "node-gripper": "git+https://git@github.com/eriknoorland/node-gripper.git",
+    "node-imu": "git+https://git@github.com/eriknoorland/node-BNO055.git",
     "node-rplidar": "git+https://git@github.com/eriknoorland/node-rplidar.git",
     "nodebot-motion-controller": "git+https://git@github.com/eriknoorland/nodebot-motion-controller.git",
     "nodemon": "^2.0.12",

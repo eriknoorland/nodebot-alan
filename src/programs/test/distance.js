@@ -1,13 +1,10 @@
-module.exports = (distance) => ({ config, arena, logger, controllers, sensors }) => {
-  const { motion } = controllers;
+const EventEmitter = require('events');
 
-  function constructor() {
-    logger.log('constructor', 'testDistance');
-  }
+module.exports = (distance) => (logger, config, arena, sensors, actuators, utils, helpers) => {
+  const eventEmitter = new EventEmitter();
+  const { motion } = actuators;
 
   async function start() {
-    logger.log('start', 'testDistance');
-
     let totalLeftTicks = 0;
     let totalRightTicks = 0;
 
@@ -44,22 +41,15 @@ module.exports = (distance) => ({ config, arena, logger, controllers, sensors })
     console.log('virtual distance left:', totalLeftTicks * config.LEFT_DISTANCE_PER_TICK);
     console.log('virtual distance right:', totalRightTicks * config.RIGHT_DISTANCE_PER_TICK);
 
-    testComplete();
+    eventEmitter.emit('mission_complete');
   }
 
   function stop() {
-    logger.log('stop', 'testDistance');
     motion.stop(true);
   }
 
-  function testComplete() {
-    logger.log('test complete', 'testDistance');
-    stop();
-  }
-
-  constructor();
-
   return {
+    events: eventEmitter,
     start,
     stop,
   };
