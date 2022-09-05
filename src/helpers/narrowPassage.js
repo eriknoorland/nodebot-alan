@@ -80,7 +80,7 @@ const narrowPassage = (logger, config, utils, helpers, lidar, motion) => {
 
     await motion.rotate(Math.PI / 2);
     await pause(250);
-    await motion.speedHeading(200, -Math.PI / 2, isWithinDistance(config.WALL_STOPPING_DISTANCE));
+    await motion.speedHeading(200, -Math.PI / 2, isWithinDistance(400));
     await motion.stop();
     await pause(250);
     await motion.speedHeading(-200, -Math.PI / 2, isWithinDistance(850, 180));
