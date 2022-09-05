@@ -56,6 +56,7 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
       { x: 2850, y: initialPosition.y, heading: 0 },
       { x: 1800, y: 1000, heading: -(Math.PI / 2) },
       { x: 1800, y: 600, heading: -(Math.PI / 2) },
+      { x: 1800, y: 400, heading: -(Math.PI / 2) },
     ];
 
     for (let scanPositionIndex = 0; scanPositionIndex < scanPositions.length; scanPositionIndex += 1) {
