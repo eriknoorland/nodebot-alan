@@ -18,6 +18,10 @@ module.exports = (withObstacle = false) => (logger, config, arena, sensors, actu
   const { deg2rad } = utils.robotlib.math;
   const { getAngleDistance, getShortestDistance, scanObject2Array } = utils.sensor.lidar;
 
+  // FIXME
+  // - up the max speed
+  // - slow down when x position is declining and close the area A
+
   const calibrationData = [];
   const maxSpeed = 300;
   const speed = maxSpeed - 100;

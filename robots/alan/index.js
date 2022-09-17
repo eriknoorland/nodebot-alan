@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const nodebot = require('../index');
+const nodebot = require('../../index');
 
 const NAME = 'Alan';
 const MOTOR_ENCODER_CPR = 48; // two pin encoder rising and falling edge
