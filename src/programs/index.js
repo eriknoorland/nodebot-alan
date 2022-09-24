@@ -3,6 +3,7 @@ const superSlalom = require('./superSlalom');
 const lineFollower = require('./lineFollower');
 const tTime = require('./tTime');
 const cans = require('./cans');
+const tbd2022 = require('./tbd-2022');
 
 const testRemote = require('./test/remote');
 const testDistance = require('./test/distance');
@@ -78,5 +79,6 @@ module.exports = [
   { name: 'T-Tijd met smalle doorgang', module: tTime(true) },
   { name: 'Blikken', module: cans() },
   { name: 'Blikken Retour', module: cans(true) },
+  { name: 'TBD 2022', module: tbd2022() },
   ...testPrograms,
 ];
