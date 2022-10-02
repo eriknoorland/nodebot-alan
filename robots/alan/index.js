@@ -1,5 +1,10 @@
 require('dotenv').config();
 
+const RPLidar = require('node-rplidar');
+const LineSensor = require('line-sensor');
+const Gripper = require('node-gripper');
+const IMU = require('node-imu');
+const MotionController = require('nodebot-motion-controller');
 const nodebot = require('../../index');
 
 const NAME = 'Alan';
@@ -51,7 +56,14 @@ const config = {
   TELEMETRY_PUBLIC_FOLDER: process.env.TELEMETRY_PUBLIC_FOLDER,
 };
 
-const expectedDevices = ['lidar', 'imu', 'line', 'gripper', 'motion'];
+const expectedDevices = [
+  { id: 'lidar', package: RPLidar },
+  { id: 'imu', package: IMU },
+  { id: 'line', package: LineSensor },
+  { id: 'gripper', package: Gripper},
+  { id: 'motion', package: MotionController },
+];
+
 const knownDevices = [
   {
     id: 'lidar',

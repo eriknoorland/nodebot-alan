@@ -1,5 +1,10 @@
 require('dotenv').config();
 
+const YDLidar = require('node-ydlidar');
+// const LineSensor = require('line-sensor');
+// const Gripper = require('node-gripper');
+// const IMU = require('node-imu');
+const MotionController = require('nodebot-motion-controller');
 const nodebot = require('../../index');
 
 const NAME = 'Woz';
@@ -51,26 +56,33 @@ const config = {
   TELEMETRY_PUBLIC_FOLDER: process.env.TELEMETRY_PUBLIC_FOLDER,
 };
 
-const expectedDevices = ['lidar', 'imu', 'line', 'gripper', 'motion'];
+const expectedDevices = [
+  { id: 'lidar', package: YDLidar, },
+  // { id: 'imu', package: IMU, },
+  // { id: 'line', package: LineSensor, },
+  // { id: 'gripper', package: Gripper, },
+  { id: 'motion', package: MotionController, },
+];
+
 const knownDevices = [
-  // {
-  //   id: 'lidar',
-  //   manufacturer: '',
-  //   vendorId: '',
-  //   productId: '',
-  // },
+  {
+    id: 'lidar',
+    manufacturer: 'Silicon Labs',
+    vendorId: '10c4',
+    productId: 'ea60',
+  },
   {
     id: 'motion',
     manufacturer: 'Teensyduino',
     vendorId: '16c0',
     productId: '0483',
   },
-  {
-    id: 'imu',
-    manufacturer: 'Seeed',
-    vendorId: '2886',
-    productId: '802f',
-  },
+  // {
+  //   id: 'imu',
+  //   manufacturer: 'Seeed',
+  //   vendorId: '2886',
+  //   productId: '802f',
+  // },
 ];
 
 nodebot(config, expectedDevices, knownDevices);

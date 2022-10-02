@@ -1,18 +1,14 @@
-const Gripper = require('node-gripper');
-
-/**
- * Initialize gripper
- * @param {String} portName
- * @param {Object} config
- * @return {Object}
- */
-const initGripper = (portName, config) => new Promise((resolve, reject) => {
-  if (!portName) {
+const initGripper = ({ path, package }, config) => new Promise((resolve, reject) => {
+  if (!path) {
     reject('gripper not found');
     return;
   }
 
-  const gripper = Gripper(portName);
+  if (!package) {
+    reject('no gripper package available');
+  }
+
+  const gripper = package(path);
   const errorTimeout = setTimeout(() => {
     reject('gripper timed out');
   }, 5000);

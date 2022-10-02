@@ -34,7 +34,9 @@ function getPortsKnownDevices(knownDevices, ports) {
   ports.forEach(port => {
     const device = knownDevices.find(({ vendorId, productId }) => vendorId === port.vendorId && productId === port.productId);
     const { path } = port;
+
     let id = null;
+    let package = null;
 
     if (device) {
       id = device.id;
@@ -49,16 +51,20 @@ function getPortsKnownDevices(knownDevices, ports) {
 async function identifyUnknownDevices(expectedDevices, devices) {
   for (let i = 0; i < devices.length; i += 1) {
     const device = devices[i];
+    const knownExpectedDevice = expectedDevices.find(({ id }) => id === device.id);
 
     if (device.id) {
+      device.package = knownExpectedDevice.package;
       continue;
     }
 
     try {
       const deviceIdentifier = await identify(device.path);
+      const unknownExpectedDevice = expectedDevices.find(({ id }) => id === deviceIdentifier);
 
-      if (expectedDevices.indexOf(deviceIdentifier) !== -1) {
+      if (unknownExpectedDevice) {
         device.id = deviceIdentifier;
+        device.package = unknownExpectedDevice.package;
       }
     } catch(error) {
       console.log(error);
@@ -103,7 +109,10 @@ function identify(path) {
 
 function convertDeviceArrayToObject(devices) {
   const returnObject = devices.reduce((acc, device) => {
-    acc[device.id] = device.path;
+    acc[device.id] = {
+      path: device.path,
+      package: device.package,
+    };
 
     return acc;
   }, {});

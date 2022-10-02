@@ -1,12 +1,5 @@
-const RPLidar = require('node-rplidar');
-
-/**
- * Initialize lidar
- * @param {String} portName
- * @return {Object}
- */
-const initLidar = (portName, config) => new Promise(async (resolve, reject) => {
-  if (!portName) {
+const initLidar = ({ path, package }, config) => new Promise(async (resolve, reject) => {
+  if (!path) {
     reject('lidar not found');
     return;
   }
@@ -15,7 +8,12 @@ const initLidar = (portName, config) => new Promise(async (resolve, reject) => {
     angleOffset: config.LIDAR_ANGLE_OFFSET,
   };
 
-  const lidar = RPLidar(portName, lidarOptions);
+  if (!package) {
+    reject('no lidar package available');
+  }
+
+  const lidar = package(path, lidarOptions);
+
   const errorTimeout = setTimeout(() => {
     reject('lidar timed out');
   }, 5000);
@@ -24,9 +22,12 @@ const initLidar = (portName, config) => new Promise(async (resolve, reject) => {
     await lidar.init();
 
     clearTimeout(errorTimeout);
-    lidar.scan();
-    resolve(lidar);
 
+    if (lidar.scan) {
+      lidar.scan();
+    }
+
+    resolve(lidar);
   } catch(error) {
     reject(error);
   }

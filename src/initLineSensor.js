@@ -1,17 +1,14 @@
-const LineSensor = require('line-sensor');
-
-/**
- * Initialize line sensor
- * @param {String} portName
- * @return {Object}
- */
-const initLineSensor = portName => new Promise((resolve, reject) => {
-  if (!portName) {
+const initLineSensor = ({ path, package }) => new Promise((resolve, reject) => {
+  if (!path) {
     reject('line sensor not found');
     return;
   }
 
-  const lineSensor = LineSensor(portName);
+  if (!package) {
+    reject('no line sensor package available');
+  }
+
+  const lineSensor = package(path);
   const errorTimeout = setTimeout(() => {
     reject('line sensor timed out');
   }, 5000);

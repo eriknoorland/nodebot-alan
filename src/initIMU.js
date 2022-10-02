@@ -1,17 +1,14 @@
-const IMU = require('node-imu');
-
-/**
- * Initialize IMU
- * @param {String} portName
- * @return {Object}
- */
-const initIMU = portName => new Promise((resolve, reject) => {
-  if (!portName) {
+const initIMU = ({ path, package }) => new Promise((resolve, reject) => {
+  if (!path) {
     reject('IMU not found');
     return;
   }
 
-  const imu = IMU(portName);
+  if (!package) {
+    reject('no IMU package available');
+  }
+
+  const imu = package(path);
   const errorTimeout = setTimeout(() => {
     reject('IMU timed out');
   }, 5000);

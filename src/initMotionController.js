@@ -1,19 +1,14 @@
-const MotionController = require('nodebot-motion-controller');
-
-/**
- * Initialize motion controller
- * @param {String} portName
- * @param {Object} config
- * @param {Object} options
- * @return {Object}
- */
-const initMotionController = (portName, config, options = {}) => new Promise((resolve, reject) => {
-  if (!portName) {
+const initMotionController = ({ path, package }, config, options = {}) => new Promise((resolve, reject) => {
+  if (!path) {
     reject('motion controller not found');
     return;
   }
 
-  const motion = MotionController(portName, config, options);
+  if (!package) {
+    reject('no motion package available');
+  }
+
+  const motion = package(path, config, options);
   const errorTimeout = setTimeout(() => {
     reject('motion controller timed out');
   }, 5000);
