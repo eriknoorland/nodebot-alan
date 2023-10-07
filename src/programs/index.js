@@ -19,6 +19,7 @@ const testVerifyRotation = require('./test/verifyRotation');
 const testVerifyPosition = require('./test/verifyPosition');
 const testPickupCan = require('./test/pickupCan');
 const testCanDetection = require('./test/canDetection');
+const testICP = require('./test/icp');
 
 const testPrograms = [
   { name: '--', module: null },
@@ -66,6 +67,7 @@ const testPrograms = [
   { name: '[Test] Verifieër positie', module: testVerifyPosition() },
   { name: '[Test] Blik pakken', module: testPickupCan() },
   { name: '[Test] Blikken detecteren', module: testCanDetection() },
+  { name: '[Test] ICP', module: testICP() },
   { name: '[Test] Remote', module: testRemote() },
 ];
 
