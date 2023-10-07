@@ -22,7 +22,7 @@ class Parser extends Transform {
   }
 }
 
-function filterUnwantedPorts(unwantedPorts, ports) {
+function filterIgnoredPorts(unwantedPorts, ports) {
   const filteredPorts = ports.filter(({ path }) => unwantedPorts.indexOf(path) === -1);
 
   return Promise.resolve(filteredPorts);
@@ -32,8 +32,8 @@ function getPortsKnownDevices(knownDevices, ports) {
   const returnArray = [];
 
   ports.forEach(port => {
-    const device = knownDevices.find(({ vendorId, productId }) => vendorId === port.vendorId && productId === port.productId);
     const { path } = port;
+    const device = knownDevices.find(({ vendorId, productId }) => vendorId === port.vendorId && productId === port.productId);
 
     let id = null;
     let package = null;
@@ -120,15 +120,10 @@ function convertDeviceArrayToObject(devices) {
   return Promise.resolve(returnObject);
 }
 
-module.exports = (expectedDevices, knownDevices) => {
-  const unwantedPorts = [
-    '/dev/tty.Bluetooth-Incoming-Port', // macos
-    '/dev/ttyAMA0', // raspbian
-  ];
-
+module.exports = ({ expectedDevices, knownDevices, ignoredPorts }) => {
   return new Promise(resolve => {
     SerialPort.list()
-      .then(filterUnwantedPorts.bind(null, unwantedPorts))
+      .then(filterIgnoredPorts.bind(null, ignoredPorts))
       .then(getPortsKnownDevices.bind(null, knownDevices))
       .then(identifyUnknownDevices.bind(null, expectedDevices))
       .then(convertDeviceArrayToObject)

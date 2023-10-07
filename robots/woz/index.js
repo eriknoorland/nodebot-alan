@@ -85,4 +85,13 @@ const knownDevices = [
   // },
 ];
 
-nodebot(config, expectedDevices, knownDevices);
+const usbDevices = {
+  expectedDevices,
+  knownDevices,
+  ignoredPorts: [
+    '/dev/tty.Bluetooth-Incoming-Port', // macos
+    '/dev/ttyAMA0', // raspbian
+  ],
+};
+
+nodebot(config, usbDevices);

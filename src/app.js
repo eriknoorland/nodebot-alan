@@ -12,7 +12,7 @@ const utilities = require('./utils');
 const makeHelpers = require('./helpers');
 const missions = require('./programs');
 
-module.exports = (specifics, expectedDevices, knownDevices) => {
+module.exports = (specifics, usbDevices) => {
   const config = makeConfig(specifics);
   let telemetry = null;
   let missionControl = null;
@@ -33,8 +33,8 @@ module.exports = (specifics, expectedDevices, knownDevices) => {
       robotlib: robotlib.utils,
     };
 
-    logger.log('Identifying connected USB devices');
-    const devices = await identifyUSBDevices(expectedDevices, knownDevices);
+    logger.log('Identifying connected USB devices...');
+    const devices = await identifyUSBDevices(usbDevices);
 
     logger.log('Setup hardware devices');
     const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, devices);
