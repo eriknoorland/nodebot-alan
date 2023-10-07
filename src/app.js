@@ -18,16 +18,16 @@ module.exports = (specifics, usbDevices) => {
   let missionControl = null;
 
   async function init() {
-    console.log('Setup socket server');
+    console.log('Setup socket server...');
     const io = await socketController(config.TELEMETRY_PUBLIC_FOLDER);
 
     console.log('Waiting for client to connect...');
     const socket = await socketClient(io);
 
-    console.log('Initialize logging capabilities');
+    console.log('Initialize logging capabilities...');
     const logger = robotlib.utils.logger(socket);
 
-    logger.log('Initializing utility functions');
+    logger.log('Initializing utility functions...');
     const utils = {
       ...utilities,
       robotlib: robotlib.utils,
@@ -36,7 +36,7 @@ module.exports = (specifics, usbDevices) => {
     logger.log('Identifying connected USB devices...');
     const devices = await identifyUSBDevices(usbDevices);
 
-    logger.log('Setup hardware devices');
+    logger.log('Setup hardware devices...');
     const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, devices);
     const observations = observationsController(utils, motion, lidar);
     const sensors = { odometry: motion, lidar, line, imu, observations };
@@ -46,13 +46,13 @@ module.exports = (specifics, usbDevices) => {
       logger.data(observation, 'observation');
     });
 
-    logger.log('Configuring telemetry');
+    logger.log('Configuring telemetry...');
     telemetry = telemetryController(socket, config, sensors, missions);
 
-    logger.log('Prepare helper functions');
+    logger.log('Prepare helper functions...');
     const helpers = makeHelpers(logger, config, sensors, actuators, utils);
 
-    logger.log('Setup mission controller');
+    logger.log('Setup mission controller...');
     missionControl = missionController(socket, logger, config, sensors, actuators, utils, helpers, missions);
 
     telemetry.ready();
