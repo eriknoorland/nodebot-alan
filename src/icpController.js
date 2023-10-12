@@ -3,7 +3,7 @@ module.exports = (icpjs, utils, odometry, lidar, reference, options = {}) => {
   const updateInterval = 100;
 
   let odomPose = null;
-  let lidarData = null;
+  let lidarData = {};
 
   function constructor() {
     if (!lidar || !odometry) {
