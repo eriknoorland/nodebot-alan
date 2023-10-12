@@ -77,12 +77,12 @@ const knownDevices = [
     vendorId: '16c0',
     productId: '0483',
   },
-  {
-    id: 'imu',
-    manufacturer: 'Seeed',
-    vendorId: '2886',
-    productId: '802f',
-  },
+  // {
+  //   id: 'imu',
+  //   manufacturer: 'Seeed',
+  //   vendorId: '2886',
+  //   productId: '802f',
+  // },
 ];
 
 const usbDevices = {
