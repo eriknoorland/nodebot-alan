@@ -2,6 +2,7 @@ module.exports = (icpjs, utils, odometry, lidar, reference, options = {}) => {
   const { deg2rad } = utils.robotlib.math;
   const updateInterval = 100;
 
+  let estimatedPose = null;
   let odomPose = null;
   let lidarData = {};
 
@@ -14,6 +15,10 @@ module.exports = (icpjs, utils, odometry, lidar, reference, options = {}) => {
     lidar.on('data', onLidarData);
 
     setInterval(onUpdate, updateInterval);
+  }
+
+  function getPose() {
+    return estimatedPose;
   }
 
   function onUpdate() {
@@ -39,7 +44,7 @@ module.exports = (icpjs, utils, odometry, lidar, reference, options = {}) => {
         phi: phi + transformation.phi,
       };
 
-      console.log({ odomPose, icpPose });
+      estimatedPose = icpPose;
       // odometry.setPose(icpPose);
     }
   }
@@ -58,5 +63,7 @@ module.exports = (icpjs, utils, odometry, lidar, reference, options = {}) => {
 
   constructor();
 
-  return {};
+  return {
+    getPose,
+  };
 };

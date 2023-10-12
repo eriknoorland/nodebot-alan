@@ -43,13 +43,13 @@ module.exports = (specifics, usbDevices) => {
     const { motion, lidar, line, gripper, imu } = await hardwareController(logger, config, devices);
 
     logger.log('Setup software sensors...');
-    icpController(icpjs, utils, motion, lidar, icpReference, {
+    const icp = icpController(icpjs, utils, motion, lidar, icpReference, {
       method: icpjs.methods.POINT_TO_PLANE,
       tolerance: 5,
     });
 
     const observations = observationsController(utils, motion, lidar);
-    const sensors = { odometry: motion, lidar, line, imu, observations };
+    const sensors = { odometry: motion, lidar, line, imu, icp, observations };
     const actuators = { motion, gripper };
 
     observations.on('pose', observation => {
