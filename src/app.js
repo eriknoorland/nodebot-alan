@@ -45,7 +45,7 @@ module.exports = (specifics, usbDevices) => {
     logger.log('Setup software sensors...');
 
     let icp = null;
-    if (config.ENABLE_ICP) {
+    if (config.ENABLE_ICP === 'true') {
       icp = icpController(icpjs, utils, motion, lidar, icpReference, {
         method: icpjs.methods.POINT_TO_PLANE,
         tolerance: 5,
@@ -53,7 +53,7 @@ module.exports = (specifics, usbDevices) => {
     }
 
     let observations = null;
-    if (config.ENABLE_OBSERVATIONS) {
+    if (config.ENABLE_OBSERVATIONS === 'true') {
       observations = observationsController(utils, motion, lidar);
 
       observations.on('pose', observation => {
