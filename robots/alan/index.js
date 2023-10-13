@@ -55,6 +55,7 @@ const config = {
   LIDAR_ANGLE_OFFSET,
   TELEMETRY_PUBLIC_FOLDER: process.env.TELEMETRY_PUBLIC_FOLDER,
   ENABLE_OBSERVATIONS: process.env.ENABLE_OBSERVATIONS === 'true',
+  ENABLE_IMU: process.env.ENABLE_IMU === 'true',
   ENABLE_ICP: process.env.ENABLE_ICP === 'true',
 };
 

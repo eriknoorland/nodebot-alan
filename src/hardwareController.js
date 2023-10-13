@@ -48,6 +48,7 @@ module.exports = async (logger, config, expectedDevices) => {
     try {
       const options = {
         imu: devices.imu,
+        useIMU: config.ENABLE_IMU,
       };
 
       devices.motion = await initMotionController(motion, config, options);
