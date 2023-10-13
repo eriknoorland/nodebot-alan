@@ -44,7 +44,7 @@ module.exports = (specifics, usbDevices) => {
 
     logger.log('Setup software sensors...');
 
-    let icp = {};
+    let icp = null;
     if (config.ENABLE_ICP) {
       icp = icpController(icpjs, utils, motion, lidar, icpReference, {
         method: icpjs.methods.POINT_TO_PLANE,
@@ -52,13 +52,17 @@ module.exports = (specifics, usbDevices) => {
       });
     }
 
-    const observations = observationsController(utils, motion, lidar);
+    let observations = null;
+    if (config.ENABLE_OBSERVATIONS) {
+      observations = observationsController(utils, motion, lidar);
+
+      observations.on('pose', observation => {
+        logger.data(observation, 'observation');
+      });
+    }
+
     const sensors = { odometry: motion, lidar, line, imu, icp, observations };
     const actuators = { motion, gripper };
-
-    observations.on('pose', observation => {
-      logger.data(observation, 'observation');
-    });
 
     logger.log('Configuring telemetry...');
     telemetry = telemetryController(socket, config, sensors, missions);
