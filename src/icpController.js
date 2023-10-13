@@ -45,7 +45,7 @@ module.exports = (icpjs, utils, motion, lidar, reference, options = {}) => {
       };
 
       estimatedPose = icpPose;
-      motion.appendPose(icpPose);
+      // motion.appendPose(icpPose); // FIXME this needs to be done differently
     }
   }
 
