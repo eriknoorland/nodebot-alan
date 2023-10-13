@@ -5,6 +5,12 @@ const LineSensor = require('line-sensor');
 const Gripper = require('node-gripper');
 const IMU = require('node-imu');
 const MotionController = require('nodebot-motion-controller');
+
+const initLidar = require('../../src/initLidar');
+const initIMU = require('../../src/initIMU');
+const initGripper = require('../../src/initGripper');
+const initLineSensor = require('../../src/initLineSensor');
+const initMotionController = require('../../src/initMotionController');
 const nodebot = require('../../index');
 
 const NAME = 'Alan';
@@ -60,11 +66,34 @@ const config = {
 };
 
 const expectedDevices = [
-  { id: 'lidar', package: RPLidar },
-  { id: 'imu', package: IMU },
-  { id: 'line', package: LineSensor },
-  { id: 'gripper', package: Gripper},
-  { id: 'motion', package: MotionController },
+  {
+    id: 'lidar',
+    package: RPLidar,
+    init: initLidar,
+  },
+  {
+    id: 'imu',
+    package: IMU,
+    init: initIMU,
+  },
+  {
+    id: 'line',
+    package: LineSensor,
+    init: initLineSensor,
+  },
+  {
+    id: 'gripper',
+    package: Gripper,
+    init: initGripper,
+  },
+  {
+    id: 'motion',
+    package: MotionController,
+    init: initMotionController,
+    options: {
+      useIMU: config.ENABLE_IMU,
+    },
+  },
 ];
 
 const knownDevices = [
@@ -80,12 +109,12 @@ const knownDevices = [
     vendorId: '16c0',
     productId: '0483',
   },
-  // {
-  //   id: 'imu',
-  //   manufacturer: 'Seeed',
-  //   vendorId: '2886',
-  //   productId: '802f',
-  // },
+  {
+    id: 'imu',
+    manufacturer: 'Seeed',
+    vendorId: '2886',
+    productId: '802f',
+  },
 ];
 
 const usbDevices = {

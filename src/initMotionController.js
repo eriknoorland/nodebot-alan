@@ -1,4 +1,4 @@
-const initMotionController = ({ path, package }, config, options = {}) => new Promise((resolve, reject) => {
+const initMotionController = ({ path, package, options }, config) => new Promise((resolve, reject) => {
   if (!path) {
     reject('motion controller not found');
     return;
