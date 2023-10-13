@@ -45,7 +45,7 @@ module.exports = (icpjs, utils, motion, lidar, reference, options = {}) => {
       };
 
       estimatedPose = icpPose;
-      motion.setPose(icpPose);
+      motion.appendPose(icpPose);
     }
   }
 
