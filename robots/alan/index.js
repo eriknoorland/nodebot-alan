@@ -54,6 +54,7 @@ const config = {
   GRIPPER_OBSTACLE_PICKUP_DISTANCE,
   LIDAR_ANGLE_OFFSET,
   TELEMETRY_PUBLIC_FOLDER: process.env.TELEMETRY_PUBLIC_FOLDER,
+  ENABLE_ICP: process.env.ENABLE_ICP,
 };
 
 const expectedDevices = [
