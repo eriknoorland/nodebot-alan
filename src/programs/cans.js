@@ -5,6 +5,7 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
   const { getArenaMatrix, cellStates } = utils;
   const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
   const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan, startPosition } = helpers;
+  const { icp } = sensors;
   const { motion, gripper } = actuators;
   const { pause } = utils.robotlib;
   const { calculateDistance } = utils.robotlib.math;
@@ -69,20 +70,22 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
         await motion.move2XYPhi(arenaCenterPosition, 0);
         await pause(250);
 
-        await verifyRotation(90, 60);
-        await verifyPosition(arena, 0);
-        await pause(250);
+        // await verifyRotation(90, 60);
+        // await verifyPosition(arena, 0);
+        motion.appendPose(icp.getPose());
+        // await pause(250);
       }
 
       await motion.move2XYPhi(scanPosition, scanPosition.heading);
       await pause(250);
 
-      if (scanPosition.heading === 0) {
-        await verifyRotation(90, 60);
-        await verifyPosition(arena, 0);
-      } else {
-        await verifyPositioninAreaC(arena, motion, scanPosition.heading);
-      }
+      // if (scanPosition.heading === 0) {
+      //   await verifyRotation(90, 60);
+      //   await verifyPosition(arena, 0);
+      // } else {
+      //   await verifyPositioninAreaC(arena, motion, scanPosition.heading);
+      // }
+      motion.appendPose(icp.getPose());
 
       const scanPose = motion.getPose();
       const localisedCans = await localiseCans(scanRadius, matrix, scanPose, 30);
@@ -104,8 +107,9 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
 
-            await verifyRotation(90, 60);
-            await verifyPosition(arena, 0);
+            // await verifyRotation(90, 60);
+            // await verifyPosition(arena, 0);
+            motion.appendPose(icp.getPose());
           }
 
           await motion.move2XYPhi(scanPosition, scanPosition.heading);
@@ -132,8 +136,9 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
 
-            await verifyRotation(90, 60);
-            await verifyPosition(arena, 0);
+            // await verifyRotation(90, 60);
+            // await verifyPosition(arena, 0);
+            motion.appendPose(icp.getPose());
           }
 
           await motion.move2XY(canStoreCoordinates[numStoredCans], -config.GRIPPER_OBSTACLE_DISTANCE);
@@ -142,12 +147,13 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
           await motion.distanceHeading(-150, motion.getPose().phi);
           await pause(250);
 
-          if (!isAtLastScanPosition) {
-            await motion.move2XYPhi(verificationPosition, 0);
-            await verifyRotation(90, 60);
-            await verifyPosition(arena, 0);
-            await pause(250);
-          }
+          // if (!isAtLastScanPosition) {
+          //   await motion.move2XYPhi(verificationPosition, 0);
+          //   // await verifyRotation(90, 60);
+          //   // await verifyPosition(arena, 0);
+          //   motion.appendPose(icp.getPose());
+          //   await pause(250);
+          // }
         } else {
           try {
             await locateCan(config);
@@ -193,18 +199,18 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
     return obstacleDetection(matrix, pose, distanceFilteredMeasurements, resolution);
   }
 
-  async function verifyPositioninAreaC(arena, motion, heading) {
-    const measurements = averageMeasurements(await scan(1000));
-    const pose = {
-      x: arena.width / 3 + (measurements[270] || measurements[269] || measurements[271]),
-      y: arena.height - measurements[180] || measurements[179] || measurements[181],
-      phi: heading,
-    };
+  // async function verifyPositioninAreaC(arena, motion, heading) {
+  //   const measurements = averageMeasurements(await scan(1000));
+  //   const pose = {
+  //     x: arena.width / 3 + (measurements[270] || measurements[269] || measurements[271]),
+  //     y: arena.height - measurements[180] || measurements[179] || measurements[181],
+  //     phi: heading,
+  //   };
 
-    motion.appendPose(pose);
+  //   motion.appendPose(pose);
 
-    return Promise.resolve();
-  }
+  //   return Promise.resolve();
+  // }
 
   function isPositionInAreaC(halfArenaHeight, position) {
     return position.y < halfArenaHeight;
