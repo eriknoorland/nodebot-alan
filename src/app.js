@@ -1,19 +1,16 @@
 require('dotenv').config();
 
 const robotlib = require('robotlib');
-const icpjs = require('icpjs/dist/icpjs.min.js');
 const makeConfig = require('./config');
 const identifyUSBDevices = require('./utils/identifyUSBDevices');
 const socketController = require('./socketController');
 const hardwareController = require('./hardwareController');
 const observationsController = require('./observationsController');
-const icpController = require('./icpController');
 const telemetryController = require('./telemetryController');
 const missionController = require('./missionController');
 const utilities = require('./utils');
 const makeHelpers = require('./helpers');
 const missions = require('./programs');
-const icpReference = require('../data/roboramaLineSegments.json');
 
 module.exports = (specifics, usbDevices) => {
   const config = makeConfig(specifics);
@@ -44,14 +41,6 @@ module.exports = (specifics, usbDevices) => {
 
     logger.log('Setup software sensors...');
 
-    let icp = null;
-    if (config.ENABLE_ICP) {
-      icp = icpController(icpjs, utils, motion, lidar, icpReference, {
-        method: icpjs.methods.POINT_TO_PLANE,
-        tolerance: 5,
-      });
-    }
-
     let observations = null;
     if (config.ENABLE_OBSERVATIONS) {
       observations = observationsController(utils, motion, lidar);
@@ -61,7 +50,7 @@ module.exports = (specifics, usbDevices) => {
       });
     }
 
-    const sensors = { odometry: motion, lidar, line, imu, icp, observations };
+    const sensors = { odometry: motion, lidar, line, imu, observations };
     const actuators = { motion, gripper };
 
     logger.log('Configuring telemetry...');

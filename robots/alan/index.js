@@ -6,6 +6,7 @@ const Gripper = require('node-gripper');
 const IMU = require('node-imu');
 const MotionController = require('nodebot-motion-controller');
 
+const icpReference = require('../../data/roboramaLineSegments.json');
 const initLidar = require('../../src/initLidar');
 const initIMU = require('../../src/initIMU');
 const initGripper = require('../../src/initGripper');
@@ -89,9 +90,20 @@ const expectedDevices = [
   {
     id: 'motion',
     package: MotionController,
-    init: initMotionController,
+    init: (device, config, devices) => {
+      return initMotionController(device, {
+        ...config,
+        imu: devices.imu,
+        lidar: devices.lidar,
+      });
+    },
     options: {
       useIMU: config.ENABLE_IMU,
+      useICP: config.ENABLE_ICP,
+      icpReference,
+      icpOptions: {
+        tolerance: 5,
+      }
     },
   },
 ];

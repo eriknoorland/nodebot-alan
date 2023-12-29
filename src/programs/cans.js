@@ -5,7 +5,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
   const { getArenaMatrix, cellStates } = utils;
   const { averageMeasurements, filterMeasurements, obstacleDetection } = utils.sensor.lidar;
   const { scan, verifyRotation, verifyPosition, locateCan, pickupCan, dropCan, startPosition } = helpers;
-  const { icp } = sensors;
   const { motion, gripper } = actuators;
   const { pause } = utils.robotlib;
   const { calculateDistance } = utils.robotlib.math;
@@ -69,8 +68,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
       if (isScanPositionInSquareC && !isRobotInSquareC) {
         await motion.move2XYPhi(arenaCenterPosition, 0);
         await pause(250);
-
-        // motion.appendPose(icp.getPose());
         await verifyRotation(90, 60);
         await verifyPosition(arena, 0);
         await pause(250);
@@ -79,7 +76,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
       await motion.move2XYPhi(scanPosition, scanPosition.heading);
       await pause(250);
 
-      // motion.appendPose(icp.getPose());
       if (scanPosition.heading === 0) {
         await verifyRotation(90, 60);
         await verifyPosition(arena, 0);
@@ -106,8 +102,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
           if (isScanPositionInSquareC) {
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
-
-            // motion.appendPose(icp.getPose());
             await verifyRotation(90, 60);
             await verifyPosition(arena, 0);
           }
@@ -135,8 +129,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
           if (isPositionInAreaC(halfArenaHeight, obstacle)) {
             await motion.move2XYPhi(arenaCenterPosition, 0);
             await pause(250);
-
-            // motion.appendPose(icp.getPose());
             await verifyRotation(90, 60);
             await verifyPosition(arena, 0);
           }
@@ -149,7 +141,6 @@ module.exports = (pickupAndReturn = false) => (logger, config, arena, sensors, a
 
           if (!isAtLastScanPosition) {
             await motion.move2XYPhi(verificationPosition, 0);
-            // motion.appendPose(icp.getPose());
             await verifyRotation(90, 60);
             await verifyPosition(arena, 0);
             await pause(250);

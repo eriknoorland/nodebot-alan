@@ -12,7 +12,6 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "icpjs": "git+https://git@github.com/eriknoorland/icpjs.git",
     "line-sensor": "git+https://git@github.com/eriknoorland/node-line-sensor.git",
     "mathjs": "^9.4.4",
     "node-gripper": "git+https://git@github.com/eriknoorland/node-gripper.git",
