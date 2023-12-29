@@ -18,16 +18,13 @@ module.exports = (withObstacle = false) => (logger, config, arena, sensors, actu
   const { deg2rad } = utils.robotlib.math;
   const { getAngleDistance, getShortestDistance, scanObject2Array } = utils.sensor.lidar;
 
-  // FIXME
-  // - up the max speed
-  // - slow down when x position is declining and close the area A
-
   const calibrationData = [];
-  const maxSpeed = 300;
-  const speed = maxSpeed - 100;
-  const Kp = 40;
   const stopArea = arena.width / 6;
+  const maxSpeed = 400;
+  const slowSpeed = maxSpeed / 2;
+  const Kp = 40;
 
+  let speed = maxSpeed - 100;
   let lastError = 0;
   let numTimesBelowThreshold = 0;
   let state = STATE_IDLE;
@@ -88,8 +85,14 @@ module.exports = (withObstacle = false) => (logger, config, arena, sensors, actu
     const currentPose = motion.getPose();
     const inStopArea = currentPose.x < stopArea;
 
-    if (inStopArea && data.every(value => value < meanValue)) {
-      return ++numTimesBelowThreshold <= 20;
+    if (inStopArea) {
+      if (speed > slowSpeed) {
+        speed -= 10;
+      }
+
+      if (data.every(value => value < meanValue)) {
+        return ++numTimesBelowThreshold <= 20;
+      }
     }
 
     const maxValue = Math.max(...data.filter(value => value > meanValue));
