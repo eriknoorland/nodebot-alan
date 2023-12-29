@@ -8,7 +8,7 @@ module.exports = async (logger, config, expectedDevices) => {
 
     if (device) {
       try {
-        devices[deviceId] = await device.init(device, config);
+        devices[deviceId] = await device.init(device, config, devices);
         logger.info(`${deviceId} initialized!`);
       } catch (error) {
         logger.error(error);
