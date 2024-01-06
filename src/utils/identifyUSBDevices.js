@@ -1,5 +1,5 @@
-const Transform = require('stream').Transform;
-const SerialPort = require('serialport');
+const { Transform } = require('stream');
+const { SerialPort } = require('serialport');
 const cobs = require('cobs');
 
 class Parser extends Transform {

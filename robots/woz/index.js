@@ -1,10 +1,10 @@
 require('dotenv').config();
 
-const YDLidar = require('node-ydlidar');
-// const LineSensor = require('line-sensor');
-// const Gripper = require('node-gripper');
-// const IMU = require('node-imu');
-const MotionController = require('nodebot-motion-controller');
+const YDLidar = require('@eriknoorland/node-ydlidar');
+// const LineSensor = require('@eriknoorland/nodebot-line-sensor');
+// const Gripper = require('@eriknoorland/nodebot-gripper');
+// const IMU = require('@eriknoorland/nodebot-imu');
+const MotionController = require('@eriknoorland/nodebot-differential-drive');
 const nodebot = require('../../index');
 
 const NAME = 'Woz';

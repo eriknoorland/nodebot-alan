@@ -1,7 +1,7 @@
-const robotlib = require('robotlib');
+const { math } = require('@eriknoorland/nodebot-utils');
 const cellStates = require('../../cellStates');
 
-const { calculateDistance, deg2rad, numberInRange } = robotlib.utils.math;
+const { calculateDistance, deg2rad, numberInRange } = math;
 
 // const checkCells = (matrix, row, column) => {
 //   for (let r = -1; r <= 1; r += 1) {

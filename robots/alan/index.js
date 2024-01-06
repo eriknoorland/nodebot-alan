@@ -1,10 +1,10 @@
 require('dotenv').config();
 
-const RPLidar = require('node-rplidar');
-const LineSensor = require('line-sensor');
-const Gripper = require('node-gripper');
-const IMU = require('node-imu');
-const MotionController = require('nodebot-motion-controller');
+const RPLidar = require('@eriknoorland/node-rplidar');
+const LineSensor = require('@eriknoorland/nodebot-line-sensor');
+const Gripper = require('@eriknoorland/nodebot-gripper');
+const IMU = require('@eriknoorland/nodebot-imu');
+const MotionController = require('@eriknoorland/nodebot-differential-drive');
 
 const initLidar = require('../../src/initLidar');
 const initIMU = require('../../src/initIMU');
