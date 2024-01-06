@@ -10,7 +10,7 @@ const corsOptions = {
 router.all('*', cors(corsOptions));
 
 router.get('/logs', async (request, response) => {
-  fs.readdir(logsDir, {}, (error, files) => {
+  fs.readdir(logsDir, {}, (error, files = []) => {
     response
       .setHeader('Content-Type', 'application/json')
       .end(JSON.stringify(files.reverse()));
