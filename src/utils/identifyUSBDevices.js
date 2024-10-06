@@ -69,6 +69,7 @@ async function identifyUnknownDevices(expectedDevices, devices) {
         device.options = unknownExpectedDevice.options;
       }
     } catch(error) {
+      console.log(`Failed to identify device on path ${path}`);
       devices.splice(i, 1);
       i -= 1;
     }
