@@ -69,7 +69,6 @@ async function identifyUnknownDevices(expectedDevices, devices) {
         device.options = unknownExpectedDevice.options;
       }
     } catch(error) {
-      console.log(error);
       devices.splice(i, 1);
       i -= 1;
     }
