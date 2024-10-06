@@ -10,7 +10,7 @@ const initIMU = require('../../src/initIMU');
 const initGripper = require('../../src/initGripper');
 const initLineSensor = require('../../src/initLineSensor');
 const initMotionController = require('../../src/initMotionController');
-const nodebot = require('../../index');
+const nodebot = require('../../src/app');
 
 const MAX_SPEED = 300; // mm/s
 const config = {

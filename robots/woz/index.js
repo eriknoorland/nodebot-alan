@@ -5,7 +5,7 @@ const YDLidar = require('@eriknoorland/node-ydlidar');
 // const Gripper = require('@eriknoorland/nodebot-gripper');
 // const IMU = require('@eriknoorland/nodebot-imu');
 const MotionController = require('@eriknoorland/nodebot-differential-drive');
-const nodebot = require('../../index');
+const nodebot = require('../../src/app');
 const MAX_SPEED = 300; // mm/s
 
 const config = {
